@@ -2,6 +2,9 @@
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project.urls]
+Homepage = "https://github.com/HIMAVARASAGAR/vexa"
+
 [project]
 name = "vexa"
 version = "1.0.0"
