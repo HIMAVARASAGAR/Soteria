@@ -1,11 +1,11 @@
-# CodeSage EULA and Source-Available License
+# Vexa EULA and Source-Available License
 **Version 1.0 — 2026**
 
 ---
 
 ### 1. License Grant & Source-Available Terms
 
-Permission is granted to use, modify, and distribute CodeSage for internal,
+Permission is granted to use, modify, and distribute Vexa for internal,
 non-commercial purposes only. This is a source-available license. You may not
 sell, lease, or monetize this Software or any derivative works without explicit
 written consent. Any unauthorized commercial exploitation constitutes a material
@@ -15,7 +15,7 @@ breach and terminates your license.
 
 ### 2. Authorized Use & Strict Liability
 
-CodeSage is a security tool for authorized testing only. You represent that you
+Vexa is a security tool for authorized testing only. You represent that you
 will only use it on systems you own or for which you have explicit, written
 permission. The user assumes 100% of all legal and technical risk. Unauthorized
 use is a violation of this contract and applicable cybercrime laws including but
@@ -94,5 +94,5 @@ cybersecurity laws in their own jurisdiction.
 
 ---
 
-*CodeSage Source-Available License — Version 1.0 — All rights reserved.*
+*Vexa Source-Available License — Version 1.0 — All rights reserved.*
 *Review by a licensed attorney is recommended before public release.*

@@ -1,8 +1,8 @@
 """
 model_picker.py — Interactive model setup wizard.
 
-Saves config to ~/.codesage/config.json.
-API keys saved to ~/.codesage/.env (chmod 600) via getpass (never echoed).
+Saves config to ~/.vexa/config.json.
+API keys saved to ~/.vexa/.env (chmod 600) via getpass (never echoed).
 """
 
 import os
@@ -10,16 +10,16 @@ import json
 import getpass
 import logging
 from pathlib import Path
-from codesage.core.llm import (
+from vexa.core.llm import (
     LLMClient, CLOUD_PROVIDERS, LOCAL_APPS,
     ollama_list_models, ollama_pull_model,
     ollama_is_running, ollama_start_server,
     TransientError, FatalError,
 )
 
-logger = logging.getLogger("codesage.picker")
+logger = logging.getLogger("vexa.picker")
 
-CONFIG_DIR  = Path.home() / ".codesage"
+CONFIG_DIR  = Path.home() / ".vexa"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 ENV_FILE    = CONFIG_DIR / ".env"
 
@@ -45,7 +45,7 @@ def reset_config():
 
 
 def _save_api_key(provider: str, key: str):
-    """Save API key to ~/.codesage/.env with chmod 600."""
+    """Save API key to ~/.vexa/.env with chmod 600."""
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     prov = CLOUD_PROVIDERS.get(provider, {})
     env_var = prov.get("key_env", f"{provider.upper()}_API_KEY")
@@ -86,7 +86,7 @@ def _load_api_key(provider: str) -> str:
 
 
 def run_picker(force: bool = False) -> LLMClient:
-    from codesage.utils.display import c, CYAN, BOLD, GREEN, YELLOW, GRAY, WHITE, ORANGE
+    from vexa.utils.display import c, CYAN, BOLD, GREEN, YELLOW, GRAY, WHITE, ORANGE
     import builtins
 
     if not force:
@@ -107,7 +107,7 @@ def run_picker(force: bool = False) -> LLMClient:
 
     builtins.print()
     builtins.print(c("  ╔══════════════════════════════════════════╗", CYAN))
-    builtins.print(c("  ║       CodeSage — Model Setup             ║", CYAN))
+    builtins.print(c("  ║       Vexa — Model Setup             ║", CYAN))
     builtins.print(c("  ╚══════════════════════════════════════════╝", CYAN))
     builtins.print()
     builtins.print(c("  Where is your AI running?\n", BOLD))
@@ -140,7 +140,7 @@ def run_picker(force: bool = False) -> LLMClient:
 
 
 def _pick_local() -> dict:
-    from codesage.utils.display import c, CYAN, BOLD, GREEN, YELLOW, GRAY, ORANGE
+    from vexa.utils.display import c, CYAN, BOLD, GREEN, YELLOW, GRAY, ORANGE
     import builtins
 
     builtins.print(c("  Which local app?\n", BOLD))
@@ -183,7 +183,7 @@ def _pick_local_model(app_info: dict) -> str:
 
 
 def _ollama_flow(base_url: str) -> str:
-    from codesage.utils.display import c, CYAN, BOLD, GREEN, YELLOW, ORANGE, GRAY
+    from vexa.utils.display import c, CYAN, BOLD, GREEN, YELLOW, ORANGE, GRAY
     import builtins
 
     builtins.print()
@@ -254,7 +254,7 @@ def _ollama_flow(base_url: str) -> str:
 
 
 def _pick_cloud(default: str | None = None) -> dict:
-    from codesage.utils.display import c, CYAN, BOLD, GREEN, YELLOW, GRAY, ORANGE
+    from vexa.utils.display import c, CYAN, BOLD, GREEN, YELLOW, GRAY, ORANGE
     import builtins
 
     builtins.print(c("  Which cloud provider?\n", BOLD))
@@ -290,7 +290,7 @@ def _pick_cloud(default: str | None = None) -> dict:
 
         if api_key:
             _save_api_key(prov_key, api_key)
-            builtins.print(c("  ✓ Key saved to ~/.codesage/.env (chmod 600)", GREEN))
+            builtins.print(c("  ✓ Key saved to ~/.vexa/.env (chmod 600)", GREEN))
         else:
             builtins.print(c("  No key entered. Set it before scanning.", ORANGE))
 
@@ -323,7 +323,7 @@ def _pick_cloud(default: str | None = None) -> dict:
 
 
 def _ask(prompt: str = "") -> str:
-    from codesage.utils.display import c, BOLD, CYAN
+    from vexa.utils.display import c, BOLD, CYAN
     try:
         return input(c(f"  ▶ {prompt} ", BOLD+CYAN))
     except (EOFError, KeyboardInterrupt):

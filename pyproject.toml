@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "codesage"
+name = "vexa"
 version = "1.0.0"
 description = "AI-assisted security testing tool with intent-driven execution"
 readme = "README.md"
 license = { file = "LICENSE.md" }
 requires-python = ">=3.10"
-authors = [{ name = "CodeSage Labs" }]
+authors = [{ name = "Vexa Labs" }]
 keywords = ["security", "pentesting", "ai", "vulnerability-scanner"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -29,14 +29,14 @@ dependencies = [
 ]
 
 [project.scripts]
-codesage = "codesage.cli:main"
+vexa = "vexa.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["codesage*"]
+include = ["vexa*"]
 
 [tool.setuptools.package-data]
-"codesage.data" = ["wordlists/*"]
+"vexa.data" = ["wordlists/*"]

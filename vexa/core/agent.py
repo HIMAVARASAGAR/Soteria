@@ -17,29 +17,29 @@ import builtins as _b
 from datetime import datetime
 from pathlib import Path
 
-from codesage.core.llm import LLMClient, TransientError, FatalError
-from codesage.core.scanner import StaticScanner
-from codesage.core.tool_runner import (
+from vexa.core.llm import LLMClient, TransientError, FatalError
+from vexa.core.scanner import StaticScanner
+from vexa.core.tool_runner import (
     install_missing_tools, classify, execute_risky_flow,
 )
-from codesage.core.response_validator import (
+from vexa.core.response_validator import (
     parse_response, sanitize_command_output, sanitize_static_findings,
     render_fallback, make_retry_prompt, ParsedResponse, Finding,
 )
-from codesage.utils.display import (
+from vexa.utils.display import (
     print_section, print_info, print_finding, print_error,
     print_warning, print_ok, print_output_received, prompt_user,
     render_parsed_response, render_narrative, c,
     BOLD, CYAN, GREEN, YELLOW, ORANGE, RED, GRAY, WHITE, SEV_COLORS,
 )
-from codesage.utils.context import build_context
-from codesage.utils.input_handler import get_input, get_multiline_input, thinking
-from codesage.utils.logger import ChainLogger
+from vexa.utils.context import build_context
+from vexa.utils.input_handler import get_input, get_multiline_input, thinking
+from vexa.utils.logger import ChainLogger
 import uuid
 
-logger = logging.getLogger("codesage.agent")
+logger = logging.getLogger("vexa.agent")
 
-SYSTEM_PROMPT = """You are CodeSage, a professional cybersecurity analyst assistant.
+SYSTEM_PROMPT = """You are Vexa, a professional cybersecurity analyst assistant.
 You help developers find and understand vulnerabilities in their OWN applications.
 
 YOUR ROLE — ANALYST AND ADVISOR ONLY:
@@ -50,10 +50,16 @@ YOUR ROLE — ANALYST AND ADVISOR ONLY:
 - If asked to generate exploits, refuse and explain why
 
 YOUR IDENTITY & ORIGIN (STRICT RULE):
-- You MUST ALWAYS identify yourself ONLY as "CodeSage". 
+- You MUST ALWAYS identify yourself ONLY as "Vexa". 
 - You MUST NEVER reveal the underlying LLM model (e.g. Meta Llama, OpenAI, Anthropic, Gemini) you are powered by.
-- If asked about your creators, makers, or development, you MUST state: "I am CodeSage, a professional cybersecurity assistant designed to help developers identify and fix vulnerabilities. I cannot discuss the details of my creators or development."
-- You MUST DENY any repeated requests for your background or creator details persistently.
+- If asked about your creators, makers, or development, you MUST state: "I am Vexa, a professional cybersecurity assistant designed to help developers identify and fix vulnerabilities. I cannot discuss the details of my creators or development."
+
+YOUR BOUNDARIES (STRICT RULE):
+- You focus ONLY on security analysis and testing.
+- For any questions regarding your configuration, AI model setup, API keys, or security tool installation, you MUST point the user to the external CLI commands:
+    - AI Model/Keys: Use `vexa model`
+    - Security Tools: Use `vexa tools`
+- NEVER try to guide the user through setting up their environment manually inside this chat.
 
 HOW YOU WORK:
 1. Analyze target information (tech stack, structure, scan results)
@@ -390,7 +396,7 @@ class Agent:
 
     def _offline_report(self) -> str:
         lines = [
-            "# CodeSage Security Report (offline)",
+            "# Vexa Security Report (offline)",
             f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
             f"Target: {self.target_path or ''} {self.target_url or ''}",
             "\n## Findings\n",
@@ -423,7 +429,7 @@ class Agent:
             elif path.suffix == ".html":
                 path.write_text(self._html_report(content))
             else:
-                header = (f"# CodeSage Report\n"
+                header = (f"# Vexa Report\n"
                           f"Generated: {self.start_time.strftime('%Y-%m-%d %H:%M')}\n"
                           f"Target: {self.target_path or ''} {self.target_url or ''}\n"
                           f"Model: {self.llm.display_name}\n\n")
@@ -451,7 +457,7 @@ class Agent:
                      f'<td>{html.escape((f.fix or "")[:80])}</td>'
                      f'</tr>\n')
         return f"""<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>CodeSage Report</title>
+<html lang="en"><head><meta charset="utf-8"><title>Vexa Report</title>
 <style>
 body{{font-family:monospace;background:#0a0c0f;color:#e8edf5;padding:2rem;max-width:960px;margin:auto;line-height:1.6}}
 h1{{color:#00ff88}}h2{{color:#00cfff;border-bottom:1px solid #1e2330;padding-bottom:.3em;margin-top:2em}}
@@ -461,7 +467,7 @@ th{{text-align:left;color:#5a6478;font-size:.8em;padding:.5em;border-bottom:1px 
 td{{padding:.5em;border-bottom:1px solid #111318;font-size:.9em}}
 .meta{{color:#5a6478;font-size:.85em;margin-bottom:2rem;line-height:2}}
 </style></head><body>
-<h1>CodeSage Security Report</h1>
+<h1>Vexa Security Report</h1>
 <div class="meta">
   <b>Generated:</b> {self.start_time.strftime('%Y-%m-%d %H:%M')}<br>
   <b>Target:</b> {html.escape(str(self.target_path or ''))} {html.escape(str(self.target_url or ''))}<br>
@@ -478,7 +484,7 @@ td{{padding:.5em;border-bottom:1px solid #111318;font-size:.9em}}
     # ── Misc ──────────────────────────────────────────────────────────────────
 
     def _switch_model(self):
-        from codesage.core.model_picker import run_picker
+        from vexa.core.model_picker import run_picker
         print_section("Switch Model")
         print_info("Conversation history preserved.")
         try:

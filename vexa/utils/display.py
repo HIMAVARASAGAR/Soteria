@@ -27,7 +27,7 @@ def banner():
     _b.print("\n".join([
         "",
         c("  ╔══════════════════════════════════════════╗", CYAN),
-        c("  ║  ", CYAN) + c("CodeSage", BOLD+GREEN) + c(" — AI Security Assistant     ║", CYAN),
+        c("  ║  ", CYAN) + c("Vexa", BOLD+GREEN) + c(" — AI Security Assistant     ║", CYAN),
         c("  ║  ", CYAN) + c("For YOUR own systems only              ║", GRAY),
         c("  ╚══════════════════════════════════════════╝", CYAN),
         "",
@@ -71,7 +71,7 @@ def render_finding(finding) -> None:
     Render a Finding dataclass object.
     This is the ONLY place findings are rendered — no re-parsing elsewhere.
     """
-    from codesage.core.response_validator import Finding
+    from vexa.core.response_validator import Finding
     if not isinstance(finding, Finding):
         print_finding(finding if isinstance(finding, dict) else vars(finding))
         return
@@ -97,7 +97,7 @@ def render_command(cmd) -> None:
     Render a SuggestedCommand dataclass object.
     Displayed clearly — never auto-executed.
     """
-    from codesage.core.response_validator import SuggestedCommand
+    from vexa.core.response_validator import SuggestedCommand
     risk_color = {"LOW": GREEN, "MEDIUM": YELLOW, "HIGH": ORANGE}.get(
         getattr(cmd, "risk", "MEDIUM"), WHITE
     )
@@ -115,7 +115,7 @@ def render_command(cmd) -> None:
 
 def render_narrative(text: str) -> None:
     """Render plain text narrative from AI — strip markdown to clean terminal text."""
-    from codesage.utils.input_handler import strip_markdown
+    from vexa.utils.input_handler import strip_markdown
     clean = strip_markdown(text)
     for line in clean.split("\n"):
         _b.print(line)

@@ -1,4 +1,4 @@
-# CodeSage Changelog
+# Vexa Changelog
 
 ## v1.0.0 — 2026
 Initial release.

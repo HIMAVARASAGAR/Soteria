@@ -31,14 +31,14 @@ _mock_deps()
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from codesage.core.tool_runner  import classify, safe_tokenize
-from codesage.core.response_validator import (
+from vexa.core.tool_runner  import classify, safe_tokenize
+from vexa.core.response_validator import (
     parse_response, sanitize_command_output,
     render_fallback, Finding, SuggestedCommand,
 )
-from codesage.utils.logger  import ChainLogger, verify_log
-from codesage.utils.context import _scrub_secrets, _high_entropy, build_context
-import codesage.utils.logger as log_mod
+from vexa.utils.logger  import ChainLogger, verify_log
+from vexa.utils.context import _scrub_secrets, _high_entropy, build_context
+import vexa.utils.logger as log_mod
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -233,7 +233,7 @@ class TestChainLogger:
         assert "tampered" in msg.lower() or "mismatch" in msg.lower()
 
     def test_secret_redaction_in_command(self, tmp_log_dir):
-        from codesage.utils.logger import _redact_command
+        from vexa.utils.logger import _redact_command
         cmd = 'curl -H "Authorization: Bearer sk-supersecret123" http://localhost'
         redacted = _redact_command(cmd)
         assert "sk-supersecret123" not in redacted
@@ -287,7 +287,7 @@ class TestContext:
         (tmp_path / "README.md").write_text("# readme")
         (tmp_path / "subdir" / "module.py").write_text("# module")
 
-        from codesage.utils.context import _file_tree
+        from vexa.utils.context import _file_tree
         tree = _file_tree(tmp_path, max_depth=1)
         lines = [l for l in tree.split("\n") if "├──" in l or "└──" in l]
 
@@ -315,7 +315,7 @@ class TestContext:
 class TestLLMProviders:
 
     def test_all_cloud_providers_have_required_fields(self):
-        from codesage.core.llm import CLOUD_PROVIDERS
+        from vexa.core.llm import CLOUD_PROVIDERS
         required = {"name", "url", "key_env", "key_url",
                     "default_model", "suggested_models", "protocol"}
         for prov_id, prov in CLOUD_PROVIDERS.items():
@@ -323,7 +323,7 @@ class TestLLMProviders:
             assert not missing, f"Provider '{prov_id}' missing: {missing}"
 
     def test_all_local_apps_have_required_fields(self):
-        from codesage.core.llm import LOCAL_APPS
+        from vexa.core.llm import LOCAL_APPS
         required = {"name", "default_url", "chat_path", "models_path",
                     "protocol", "default_model"}
         for app_id, app in LOCAL_APPS.items():
@@ -331,7 +331,7 @@ class TestLLMProviders:
             assert not missing, f"App '{app_id}' missing: {missing}"
 
     def test_provider_count(self):
-        from codesage.core.llm import CLOUD_PROVIDERS, LOCAL_APPS
+        from vexa.core.llm import CLOUD_PROVIDERS, LOCAL_APPS
         assert len(CLOUD_PROVIDERS) >= 10
         assert len(LOCAL_APPS) >= 9
 
