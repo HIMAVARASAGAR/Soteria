@@ -17,8 +17,9 @@ import sys
 import logging
 import platform
 from dataclasses import dataclass, field
+from vexa.utils.shell import get_shell_info
 
-logger = logging.getLogger("codesage.runner")
+logger = logging.getLogger("vexa.runner")
 
 # ── Safe install prefixes (first token must be one of these) ──────────────────
 SAFE_INSTALL_PREFIXES = {
@@ -183,7 +184,7 @@ def run_setup_command(command: str, show_output: bool = True) -> RunResult:
     Uses shlex.split() + shell=False always.
     Refuses and returns RunResult(allowed=False) if classify() blocks it.
     """
-    from codesage.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD
+    from vexa.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD
 
     result = RunResult(command=command, allowed=False)
 
@@ -215,9 +216,12 @@ def run_setup_command(command: str, show_output: bool = True) -> RunResult:
         builtins.print(c("  " + "─"*60, GRAY))
 
     try:
+        shell_info = get_shell_info()
+        is_windows_shell = (shell_info['os'] == 'windows' and not shell_info['is_wsl'])
+        
         proc = subprocess.Popen(
             tokens,
-            shell=False,        # NEVER shell=True
+            shell=is_windows_shell, # Use shell-mode on native Windows for better binary resolution
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -280,8 +284,8 @@ def execute_risky_flow(suggested_command: str, explanation: str,
     Decision log: Command executed = exactly what user typed.
     AI never modifies commands before execution.
     """
-    from codesage.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED, GRAY, YELLOW
-    from codesage.utils.auth import require_reauth
+    from vexa.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED, GRAY, YELLOW
+    from vexa.utils.auth import require_reauth
     import builtins
 
     builtins.print()
@@ -365,9 +369,12 @@ def execute_risky_flow(suggested_command: str, explanation: str,
     builtins.print(c("  " + "─"*60, GRAY))
 
     try:
+        shell_info = get_shell_info()
+        is_windows_shell = (shell_info['os'] == 'windows' and not shell_info['is_wsl'])
+
         proc = subprocess.Popen(
             tokens,
-            shell=False,
+            shell=is_windows_shell, # Use shell-mode on native Windows for better binary resolution
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -395,7 +402,7 @@ def execute_risky_flow(suggested_command: str, explanation: str,
         result.error   = f"Tool not found: {tokens[0]}"
         result.ran     = True
         builtins.print(c(f"  ✗ {result.error}", ORANGE))
-        builtins.print(c(f"  Install it first: codesage packages install {tokens[0]}", GRAY))
+        builtins.print(c(f"  Install it first: vexa packages install {tokens[0]}", GRAY))
     except Exception as e:
         result.error = str(e)
         result.ran   = True
@@ -434,13 +441,12 @@ TOOL_INSTALL = {
 
 
 def check_tools(names: list[str]) -> list[dict]:
-    sys_name = platform.system()
-    if sys_name == "Darwin":
-        os_type = "mac"
-    elif sys_name == "Windows":
-        os_type = "win"
-    else:
-        os_type = "linux"
+    shell_info = get_shell_info()
+    os_type = 'win' if shell_info['os'] == 'windows' else ('mac' if shell_info['os'] == 'mac' else 'linux')
+    # If in WSL, we treat it as linux
+    if shell_info['is_wsl']:
+        os_type = 'linux'
+        
     results = []
     for name in names:
         info = TOOL_INSTALL.get(name, {})
@@ -466,7 +472,7 @@ def check_tools(names: list[str]) -> list[dict]:
 
 
 def install_missing_tools(names: list[str], ask: bool = True) -> dict[str, bool]:
-    from codesage.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD, YELLOW
+    from vexa.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD, YELLOW
     import builtins
 
     statuses  = check_tools(names)

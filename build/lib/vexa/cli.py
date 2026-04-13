@@ -1,20 +1,20 @@
 """
-cli.py — CodeSage command-line interface.
+cli.py — Vexa command-line interface.
 
-Entry point: codesage (defined in pyproject.toml)
+Entry point: vexa (defined in pyproject.toml)
 
 Subcommands:
-  codesage              → scan (default)
-  codesage scan         → start scan session
-  codesage config       → manage settings
-  codesage model        → manage AI model
-  codesage logs         → view and verify logs
-  codesage packages     → manage security tools
-  codesage cleanup      → clean temp/session data
-  codesage ai-test      → test AI endpoints
-  codesage version      → show version
-  codesage reset        → wipe all config
-  codesage terms        → view terms of use
+  vexa              → scan (default)
+  vexa scan         → start scan session
+  vexa config       → manage settings
+  vexa model        → manage AI model
+  vexa logs         → view and verify logs
+  vexa packages     → manage security tools
+  vexa cleanup      → clean temp/session data
+  vexa ai-test      → test AI endpoints
+  vexa version      → show version
+  vexa reset        → wipe all config
+  vexa terms        → view terms of use
 """
 
 import sys
@@ -24,11 +24,14 @@ import builtins as _b
 from pathlib import Path
 
 
-CONFIG_DIR = Path.home() / ".codesage"
-LOG_FILE   = CONFIG_DIR / "codesage.log"
+CONFIG_DIR = Path.home() / ".vexa"
+LOG_FILE   = CONFIG_DIR / "vexa.log"
 
 
 def setup_logging(verbose: bool, debug: bool):
+    from vexa.utils.migration import migrate_if_needed
+    migrate_if_needed()
+    
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     level = logging.DEBUG if debug else (logging.INFO if verbose else logging.WARNING)
     logging.basicConfig(
@@ -43,30 +46,30 @@ def setup_logging(verbose: bool, debug: bool):
 
 # ── First run gate ────────────────────────────────────────────────────────────
 
-def first_run_gate():
+def first_run_gate(is_explicit_setup: bool = False):
     """
-    On first run: show terms → require acceptance → create account → pick model.
-    All three gates must pass. No shortcuts.
+    On first run: show terms → require acceptance → create account.
+    Model setup is handled separately unless is_explicit_setup is True.
     """
-    from codesage.utils.display import c, CYAN, GREEN, ORANGE, BOLD, GRAY
-    from codesage.utils.auth import (
+    from vexa.utils.display import c, CYAN, GREEN, ORANGE, BOLD, GRAY, print_error
+    from vexa.utils.auth import (
         is_first_run, setup_account, terms_accepted, record_terms_acceptance,
         _load_auth,
     )
-    from codesage.utils.input_handler import show_terms_with_gate
-    from codesage.core.model_picker import run_picker, load_config
-    from codesage import CURRENT_TERMS_VERSION
+    from vexa.utils.input_handler import show_terms_with_gate
+    from vexa.core.model_picker import run_picker, load_config
+    from vexa import CURRENT_TERMS_VERSION
 
-    license_path = Path(__file__).parent.parent / "LICENSE.md"
-    if not license_path.exists():
-        license_path = Path(__file__).parent.parent.parent / "LICENSE.md"
-
-    # Terms acceptance
+    # 1. Terms acceptance (Always required before any action)
     if not terms_accepted():
-        _b.print(c("\n  Before using CodeSage, you must review and accept the Terms of Use.", ORANGE))
+        _b.print(c("\n  Before using Vexa, you must review and accept the Terms of Use.", ORANGE))
+
+        license_path = Path(__file__).parent.parent / "LICENSE.md"
+        if not license_path.exists():
+            license_path = Path(__file__).parent.parent.parent / "LICENSE.md"
 
         terms_text = license_path.read_text() if license_path.exists() else (
-            "Terms of Use — see LICENSE.md in the CodeSage repository."
+            "Terms of Use — see LICENSE.md in the Vexa repository."
         )
 
         accepted, time_on_screen = show_terms_with_gate(terms_text)
@@ -77,27 +80,35 @@ def first_run_gate():
         record_terms_acceptance(time_on_screen)
         _b.print()
 
-    # Account creation (first run only)
+    # 2. Account creation (Always required)
     if is_first_run():
         if not setup_account():
             _b.print(c("  Account setup failed. Exiting.", ORANGE))
             sys.exit(1)
         _b.print()
 
-    # Model config
-    if not load_config():
-        _b.print(c("  Let's set up your AI model.", CYAN))
-        run_picker()
+    # 3. Model config
+    # If explicit 'model' cmd, we skip the immediate check here because 
+    # cmd_model will trigger the picker itself.
+    if is_explicit_setup:
+        run_picker(force=True)
+    elif not load_config():
+        # Only exit if we are NOT running the model setup command already
+        import argparse
+        # We need to peek at the sys.argv since args isn't available in main's global scope yet
+        is_model_cmd = "model" in sys.argv
+        if not is_model_cmd:
+            _b.print(c("\n  ⚠ AI Model not configured.", ORANGE))
+            _b.print(c("  Run 'vexa model' to set up your API keys.", GRAY))
+            sys.exit(1)
 
-    # Tool installation gate (defaultly installed intent)
+    # 4. Tool installation (Informational)
     auth = _load_auth()
-    if auth and not auth.get("tools_setup_done"):
-        from codesage.core.tool_runner import install_missing_tools, TOOL_INSTALL
-        from codesage.utils.auth import mark_tools_setup_done
+    if is_explicit_setup and auth and not auth.get("tools_setup_done"):
+        from vexa.core.tool_runner import install_missing_tools, TOOL_INSTALL
+        from vexa.utils.auth import mark_tools_setup_done
         
         _b.print(c("\n  Final Step: Checking required security tools...", CYAN))
-        _b.print(c("  CodeSage works best when nmap, sqlmap, etc. are installed.", GRAY))
-        
         install_missing_tools(list(TOOL_INSTALL.keys()), ask=True)
         mark_tools_setup_done()
 
@@ -105,7 +116,7 @@ def first_run_gate():
 # ── Login gate ────────────────────────────────────────────────────────────────
 
 def login_gate() -> bool:
-    from codesage.utils.auth import login, is_authenticated
+    from vexa.utils.auth import login, is_authenticated
     if is_authenticated():
         return True
     return login()
@@ -114,9 +125,8 @@ def login_gate() -> bool:
 # ── Subcommand handlers ───────────────────────────────────────────────────────
 
 def cmd_scan(args):
-    from codesage.utils.display import banner, print_error, c, GRAY
-    from codesage.core.model_picker import run_picker
-    from codesage.core.agent import Agent
+    from vexa.utils.display import banner, print_error, c, GRAY, ORANGE
+    from vexa.core.agent import Agent
 
     banner()
 
@@ -131,7 +141,14 @@ def cmd_scan(args):
         print_error("Provide --target and/or --url.")
         sys.exit(1)
 
-    llm = run_picker(force=getattr(args, "reset_model", False))
+    # In scan mode, we expect model to already be configured.
+    from vexa.core.model_picker import load_config
+    llm = load_config()
+    if not llm:
+        _b.print(c("\n  ⚠ Vexa is not configured.", ORANGE))
+        _b.print(c("  Please run 'vexa model' first.", GRAY))
+        sys.exit(1)
+
     agent = Agent(
         llm=llm,
         target_path=args.target,
@@ -147,7 +164,7 @@ def cmd_scan(args):
             agent._generate_report()
         sys.exit(0)
     except Exception as e:
-        from codesage.utils.display import print_error
+        from vexa.utils.display import print_error
         print_error(f"Fatal: {e}")
         logging.exception("Fatal crash")
         _b.print(c(f"\n  Full log: {LOG_FILE}", GRAY))
@@ -155,8 +172,8 @@ def cmd_scan(args):
 
 
 def cmd_config(args):
-    from codesage.utils.display import print_section, print_info, c, BOLD, GREEN, GRAY
-    from codesage.utils.auth import login, require_reauth, change_password, get_username
+    from vexa.utils.display import print_section, print_info, c, BOLD, GREEN, GRAY
+    from vexa.utils.auth import login, require_reauth, change_password, get_username
     import json
 
     if not login_gate():
@@ -174,7 +191,7 @@ def cmd_config(args):
             print_info(f"Model    : {cfg.get('model','?')}")
             print_info(f"Type     : {cfg.get('type','?')}")
         else:
-            print_info("No model configured. Run: codesage model")
+            print_info("No model configured. Run: vexa model")
         print_info(f"Config dir: {CONFIG_DIR}")
 
     elif sub == "keys":
@@ -192,7 +209,7 @@ def cmd_config(args):
     elif sub == "keys-remove":
         provider = getattr(args, "provider", "")
         if not provider:
-            print_info("Usage: codesage config keys-remove <provider>")
+            print_info("Usage: vexa config keys-remove <provider>")
             return
         if not require_reauth(f"remove API key for {provider}"):
             return
@@ -208,8 +225,8 @@ def cmd_config(args):
 
 
 def cmd_model(args):
-    from codesage.core.model_picker import run_picker, load_config, reset_config
-    from codesage.utils.display import print_section, print_info
+    from vexa.core.model_picker import run_picker, load_config, reset_config
+    from vexa.utils.display import print_section, print_info
 
     if not login_gate():
         sys.exit(1)
@@ -217,11 +234,11 @@ def cmd_model(args):
     sub = getattr(args, "model_cmd", "show")
 
     if sub in ("", "show", "set"):
-        run_picker(force=True)
+        first_run_gate(is_explicit_setup=True)
     elif sub == "reset":
         reset_config()
         print_info("Model config cleared.")
-        run_picker(force=True)
+        first_run_gate(is_explicit_setup=True)
     elif sub == "list":
         cfg = load_config()
         if cfg:
@@ -236,10 +253,10 @@ def cmd_model(args):
         if not cfg:
             print_info("No model configured.")
             return
-        from codesage.core.llm import LLMClient
+        from vexa.core.llm import LLMClient
         client = LLMClient(cfg)
         ok, msg = client.ping()
-        from codesage.utils.display import print_ok, print_error
+        from vexa.utils.display import print_ok, print_error
         if ok:
             print_ok(msg)
         else:
@@ -247,8 +264,8 @@ def cmd_model(args):
 
 
 def cmd_logs(args):
-    from codesage.utils.logger import verify_log, list_sessions
-    from codesage.utils.display import print_section, print_info, print_ok, print_error, c, GREEN, RED
+    from vexa.utils.logger import verify_log, list_sessions
+    from vexa.utils.display import print_section, print_info, print_ok, print_error, c, GREEN, RED
 
     if not login_gate():
         sys.exit(1)
@@ -292,8 +309,8 @@ def cmd_logs(args):
 
 
 def cmd_packages(args):
-    from codesage.core.tool_runner import check_tools, install_missing_tools, TOOL_INSTALL
-    from codesage.utils.display import print_section, print_info, c, GREEN, ORANGE
+    from vexa.core.tool_runner import check_tools, install_missing_tools, TOOL_INSTALL
+    from vexa.utils.display import print_section, print_info, c, GREEN, ORANGE
 
     if not login_gate():
         sys.exit(1)
@@ -311,14 +328,14 @@ def cmd_packages(args):
 
     elif sub == "install":
         if not pkgs:
-            print_info("Usage: codesage packages install <tool> [tool2 ...]")
+            print_info("Usage: vexa packages install <tool> [tool2 ...]")
             return
         install_missing_tools(pkgs, ask=False)
 
     elif sub == "remove":
-        from codesage.utils.auth import require_reauth
+        from vexa.utils.auth import require_reauth
         if not pkgs:
-            print_info("Usage: codesage packages remove <tool>")
+            print_info("Usage: vexa packages remove <tool>")
             return
         if not require_reauth(f"remove packages: {', '.join(pkgs)}"):
             return
@@ -327,8 +344,8 @@ def cmd_packages(args):
 
 
 def cmd_cleanup(args):
-    from codesage.utils.auth import require_reauth
-    from codesage.utils.display import print_ok, print_info
+    from vexa.utils.auth import require_reauth
+    from vexa.utils.display import print_ok, print_info
 
     if not login_gate():
         sys.exit(1)
@@ -356,9 +373,9 @@ def cmd_cleanup(args):
 
 
 def cmd_version(args):
-    from codesage import __version__, CURRENT_TERMS_VERSION
-    from codesage.utils.auth import terms_accepted
-    _b.print(f"\n  CodeSage v{__version__}")
+    from vexa import __version__, CURRENT_TERMS_VERSION
+    from vexa.utils.auth import terms_accepted
+    _b.print(f"\n  Vexa v{__version__}")
     _b.print(f"  Terms version: {CURRENT_TERMS_VERSION}")
     accepted = terms_accepted()
     _b.print(f"  Terms accepted: {'yes' if accepted else 'no'}")
@@ -366,14 +383,14 @@ def cmd_version(args):
     _b.print()
 
 
-def cmd_reset(args):
-    from codesage.utils.auth import require_reauth
-    from codesage.utils.display import c, RED, ORANGE, GREEN
+def cmd_factory_reset(args):
+    from vexa.utils.auth import require_reauth
+    from vexa.utils.display import c, RED, ORANGE, GREEN
 
     if not login_gate():
         sys.exit(1)
 
-    _b.print(c("\n  ⚠  RESET — This will wipe all CodeSage configuration.", RED+"\033[1m"))
+    _b.print(c("\n  ⚠  RESET — This will wipe all Vexa configuration.", RED+"\033[1m"))
     _b.print(c("  This includes: model config, API keys, user account, logs.", ORANGE))
     _b.print(c("  This cannot be undone.", RED))
     _b.print()
@@ -393,11 +410,11 @@ def cmd_reset(args):
     import shutil
     if CONFIG_DIR.exists():
         shutil.rmtree(CONFIG_DIR)
-    _b.print(c("  ✓ All config wiped. Run 'codesage' to start fresh.", GREEN))
+    _b.print(c("  ✓ All config wiped. Run 'vexa' to start fresh.", GREEN))
 
 
 def cmd_terms(args):
-    from codesage.utils.display import c, CYAN
+    from vexa.utils.display import c, CYAN
     license_path = Path(__file__).parent.parent / "LICENSE.md"
     if not license_path.exists():
         license_path = Path(__file__).parent.parent.parent / "LICENSE.md"
@@ -407,11 +424,11 @@ def cmd_terms(args):
         for line in license_path.read_text().split("\n"):
             _b.print("  " + line)
     else:
-        _b.print(c("\n  LICENSE.md not found. See the CodeSage GitHub repository.", CYAN))
+        _b.print(c("\n  LICENSE.md not found. See the Vexa GitHub repository.", CYAN))
 
     version_flag = getattr(args, "version", False)
     if version_flag:
-        from codesage.utils.auth import _load_auth
+        from vexa.utils.auth import _load_auth
         auth = _load_auth()
         if auth and auth.get("terms_accepted"):
             _b.print(f"\n  Accepted version : {auth.get('terms_version')}")
@@ -423,7 +440,7 @@ def cmd_terms(args):
 
 
 def cmd_aitest(args):
-    from codesage.utils.display import print_section, print_info, c, CYAN, YELLOW
+    from vexa.utils.display import print_section, print_info, c, CYAN, YELLOW
 
     if not login_gate():
         sys.exit(1)
@@ -439,17 +456,30 @@ def cmd_aitest(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="codesage",
-        description="CodeSage — AI-assisted security testing",
+        prog="vexa",
+        description="Vexa — AI-assisted security testing",
+        usage="vexa [-h] [-t TARGET] [-u URL] [options] [subcommand] ...",
         formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Usage Examples:
+  Direct Scan (URL):    vexa --url http://127.0.0.1:8080
+  Direct Scan (Path):   vexa --target ./vulnerable-app
+  Guided Scan:          vexa scan --url http://127.0.0.1:8080
+  
+  Setup AI Model:       vexa model
+  Manage Tools:         vexa tools
+  View Sessions:        vexa logs
+  
+For detailed help on a subcommand: vexa <subcommand> --help
+""",
     )
-    parser.add_argument("--verbose", "-v", action="store_true")
-    parser.add_argument("--debug",         action="store_true")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Show verbose output")
+    parser.add_argument("--debug",         action="store_true", help="Show debug level logs (v. detailed)")
 
-    sub = parser.add_subparsers(dest="command")
+    sub = parser.add_subparsers(dest="command", metavar="subcommand")
 
     # scan
-    scan_p = sub.add_parser("scan", help="Start a scan session")
+    scan_p = sub.add_parser("scan", help="Start a guided scan session")
     scan_p.add_argument("--target", "-t", help="Local project path")
     scan_p.add_argument("--url",    "-u", help="Target URL")
     scan_p.add_argument("--scope",  "-s", default="all")
@@ -457,36 +487,36 @@ def main():
     scan_p.add_argument("--reset-model", action="store_true")
 
     # config
-    cfg_p = sub.add_parser("config", help="Manage settings")
+    cfg_p = sub.add_parser("config", help="Manage account and settings")
     cfg_p.add_argument("config_cmd", nargs="?", default="show",
                        choices=["show","keys","keys-remove","password","set"])
     cfg_p.add_argument("provider", nargs="?")
 
     # model
-    mdl_p = sub.add_parser("model", help="Manage AI model")
+    mdl_p = sub.add_parser("model", help="Configure AI providers and keys")
     mdl_p.add_argument("model_cmd", nargs="?", default="show",
                        choices=["show","set","reset","list","test"])
 
     # logs
-    log_p = sub.add_parser("logs", help="View and verify logs")
+    log_p = sub.add_parser("logs", help="View and integrity-check session logs")
     log_p.add_argument("--verify", action="store_true")
     log_p.add_argument("--session")
 
     # packages
-    pkg_p = sub.add_parser("packages", aliases=["tools"], help="Manage security tools")
+    pkg_p = sub.add_parser("packages", aliases=["tools"], help="Check/Install security tool binaries")
     pkg_p.add_argument("pkg_cmd", nargs="?", default="list",
                        choices=["list","install","remove"])
     pkg_p.add_argument("packages", nargs="*")
 
     # cleanup
-    cln_p = sub.add_parser("cleanup", help="Clean temp/session data")
+    cln_p = sub.add_parser("cleanup", help="Remove temporary and session files")
     cln_p.add_argument("--all", action="store_true")
 
     # version
-    sub.add_parser("version", help="Show version info")
+    sub.add_parser("version", help="Show version and terms info")
 
-    # reset
-    sub.add_parser("reset", help="Wipe all configuration")
+    # factory-reset
+    sub.add_parser("factory-reset", aliases=["reset"], help="Wipe ALL configuration (Danger Zone)")
 
     # terms
     trm_p = sub.add_parser("terms", help="View terms of use")
@@ -532,8 +562,8 @@ def main():
         cmd_cleanup(args)
     elif cmd == "version":
         cmd_version(args)
-    elif cmd == "reset":
-        cmd_reset(args)
+    elif cmd == "factory-reset" or cmd == "reset":
+        cmd_factory_reset(args)
     elif cmd == "terms":
         cmd_terms(args)
     elif cmd == "ai-test":
@@ -541,13 +571,20 @@ def main():
     else:
         # No subcommand — treat as scan if targets given, else show help
         if getattr(args, "target", None) or getattr(args, "url", None):
-            from codesage.utils.display import banner
+            from vexa.utils.display import banner, c, ORANGE, GRAY
             banner()
             if not login_gate():
                 sys.exit(1)
-            from codesage.core.model_picker import run_picker
-            from codesage.core.agent import Agent
-            llm = run_picker(force=getattr(args, "reset_model", False))
+            
+            from vexa.core.model_picker import load_config
+            from vexa.core.agent import Agent
+            
+            llm = load_config()
+            if not llm:
+                _b.print(c("\n  ⚠ AI Model not configured.", ORANGE))
+                _b.print(c("  Run 'vexa model' to set up your API keys.", GRAY))
+                sys.exit(1)
+                
             agent = Agent(
                 llm=llm,
                 target_path=getattr(args,"target",None),

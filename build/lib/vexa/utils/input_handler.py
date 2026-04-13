@@ -24,7 +24,7 @@ from prompt_toolkit.keys import Keys
 from prompt_toolkit.formatted_text import ANSI
 from prompt_toolkit.history import InMemoryHistory
 
-from codesage.utils.display import c, BOLD, CYAN, GRAY, GREEN, ORANGE, YELLOW
+from vexa.utils.display import c, BOLD, CYAN, GRAY, GREEN, ORANGE, YELLOW
 
 
 # ── State ─────────────────────────────────────────────────────────────────────
@@ -178,7 +178,7 @@ def show_terms_with_gate(terms_text: str) -> tuple[bool, int]:
 
     Returns (accepted: bool, time_on_screen: int seconds)
     """
-    from codesage.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED, GRAY
+    from vexa.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED, GRAY
     import builtins, math
 
     lines      = terms_text.split("\n")
@@ -189,7 +189,7 @@ def show_terms_with_gate(terms_text: str) -> tuple[bool, int]:
 
     builtins.print()
     builtins.print(c("  ╔══════════════════════════════════════════════════════════╗", CYAN))
-    builtins.print(c("  ║         CodeSage — Terms of Use & License v1.0          ║", CYAN))
+    builtins.print(c("  ║         Vexa — Terms of Use & License v1.0          ║", CYAN))
     builtins.print(c("  ║     Scroll through all sections before accepting.        ║", GRAY))
     builtins.print(c("  ╚══════════════════════════════════════════════════════════╝", CYAN))
     builtins.print()

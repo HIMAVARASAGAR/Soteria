@@ -21,7 +21,7 @@ import urllib.error
 import subprocess
 import shutil
 
-logger = logging.getLogger("codesage.llm")
+logger = logging.getLogger("vexa.llm")
 
 # ── Provider catalogue ────────────────────────────────────────────────────────
 
@@ -466,7 +466,7 @@ class LLMClient:
         import ssl
         import certifi
         if "User-Agent" not in headers and "user-agent" not in {k.lower() for k in headers}:
-            headers["User-Agent"] = "CodeSage/1.0 (Security Tester)"
+            headers["User-Agent"] = "Vexa/1.0 (Security Tester)"
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers=headers)
         context = ssl.create_default_context(cafile=certifi.where())
