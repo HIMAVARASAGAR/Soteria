@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codesage"
+version = "1.0.0"
+description = "AI-assisted security testing tool with intent-driven execution"
+readme = "README.md"
+license = { file = "LICENSE.md" }
+requires-python = ">=3.10"
+authors = [{ name = "CodeSage Labs" }]
+keywords = ["security", "pentesting", "ai", "vulnerability-scanner"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "prompt_toolkit>=3.0.0",
+    "python-dotenv>=1.0.0",
+    "bcrypt>=4.0.0",
+    "certifi>=2024.0.0",
+]
+
+[project.scripts]
+codesage = "codesage.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["codesage*"]
+
+[tool.setuptools.package-data]
+"codesage.data" = ["wordlists/*"]

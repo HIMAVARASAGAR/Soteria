@@ -1,0 +1,8 @@
+prompt_toolkit>=3.0.0
+python-dotenv>=1.0.0
+bcrypt>=4.0.0
+certifi>=2024.0.0
+
+[dev]
+pytest>=7.0
+pytest-cov
