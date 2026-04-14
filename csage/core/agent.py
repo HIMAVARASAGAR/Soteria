@@ -22,6 +22,12 @@ from csage.core.scanner import StaticScanner
 from csage.core.tool_runner import (
     install_missing_tools, classify, execute_risky_flow,
 )
+from csage.utils.display import (
+    c, BOLD, VIOLET, WHITE, GRAY, RED,
+    print_section, print_info, print_error, print_warning, print_ok,
+    render_finding, render_command, render_narrative, render_parsed_response,
+    thinking
+)
 from csage.core.response_validator import (
     parse_response, sanitize_command_output, sanitize_static_findings,
     render_fallback, make_retry_prompt, ParsedResponse, Finding,
@@ -220,15 +226,15 @@ class Agent:
 
     def _loop(self):
         while True:
-            print_section("Your Turn")
-            print_info(c("  [paste]", BOLD)  + "   paste command output")
-            print_info(c("  [run]", BOLD)    + "     run a risky command (manual entry)")
-            print_info(c("  [next]", BOLD)   + "    get next command")
-            print_info(c("  [ask]", BOLD)    + "     ask a question")
-            print_info(c("  [tools]", BOLD)  + "   check/install tools")
-            print_info(c("  [report]", BOLD) + "  generate report")
-            print_info(c("  [model]", BOLD)  + "   switch AI model")
-            print_info(c("  [quit]", BOLD)   + "    end session")
+            from csage.utils.display import c, BOLD, VIOLET, GRAY
+            _b.print(c(f"  ━━━ YOUR TURN " + "━"*50, VIOLET))
+            _b.print(c("    [next/enter]", BOLD+WHITE) + c(" Get next recommendation", GRAY))
+            _b.print(c("    [run]", BOLD+WHITE) + c("        Execute suggest command", GRAY))
+            _b.print(c("    [paste]", BOLD+WHITE) + c("      Paste manual output", GRAY))
+            _b.print(c("    [ask]", BOLD+WHITE) + c("        Ask a question", GRAY))
+            _b.print(c("    [report]", BOLD+WHITE) + c("     Generate audit report", GRAY))
+            _b.print(c("    [tools]", BOLD+WHITE) + c("      Check/Install tools", GRAY))
+            _b.print(c("    [quit]", BOLD+WHITE) + c("       End session", GRAY))
             _b.print()
 
             choice = get_input("What would you like to do?").lower()

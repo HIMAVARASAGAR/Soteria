@@ -1,6 +1,6 @@
 # CSage  
 
-[![Version](https://img.shields.io/badge/version-0.1.2-blue.svg)](https://github.com/HIMAVARASAGAR/csage)
+[![Version](https://img.shields.io/badge/version-0.1.3-blue.svg)](https://github.com/HIMAVARASAGAR/csage)
 [![Python](https://img.shields.io/badge/python-3.10%2B-green.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-Source--Available-orange.svg)](LICENSE.md)
 

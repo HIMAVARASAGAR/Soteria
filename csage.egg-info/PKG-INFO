@@ -1,0 +1,231 @@
+Metadata-Version: 2.4
+Name: csage
+Version: 0.1.2
+Summary: AI-assisted security testing tool with intent-driven execution
+Author: CSage Labs
+License: # CSage EULA and Source-Available License
+        **Version 0.1.2 — 2026**
+        
+        ---
+        
+        ### 1. License Grant & Source-Available Terms
+        
+        Permission is granted to use, modify, and distribute CSage for internal,
+        non-commercial purposes only. This is a source-available license. You may not
+        sell, lease, or monetize this Software or any derivative works without explicit
+        written consent. Any unauthorized commercial exploitation constitutes a material
+        breach and terminates your license.
+        
+        ---
+        
+        ### 2. Authorized Use & Strict Liability
+        
+        CSage is a security tool for authorized testing only. You represent that you
+        will only use it on systems you own or for which you have explicit, written
+        permission. The user assumes 100% of all legal and technical risk. Unauthorized
+        use is a violation of this contract and applicable cybercrime laws including but
+        not limited to the Computer Fraud and Abuse Act (US), Computer Misuse Act (UK),
+        and the Information Technology Act, 2000 (India).
+        
+        ---
+        
+        ### 3. AI Usage & Data Transmission
+        
+        **Advisory Only:** AI-generated suggestions are advisory. You are legally
+        required to verify all commands before execution.
+        
+        **User-Initiated Prompting:** By selecting a Cloud AI provider, you explicitly
+        authorize the transmission of local data to that provider. You warrant that this
+        transmission complies with your employer's data policies. Contributors are not
+        liable for data leaks caused by your choice of AI backend.
+        
+        ---
+        
+        ### 4. Prohibited Conduct
+        
+        You are strictly prohibited from:
+        
+        - Using outputs to train, fine-tune, or improve other AI or machine learning models.
+        - Circumventing safety confirmation prompts or legal gates in the source code.
+        - Using the software for any criminal activity or targeting critical infrastructure.
+        - Modifying or distributing versions that remove authorization requirements or logging.
+        
+        ---
+        
+        ### 5. Absolute Disclaimer of Warranties
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. THE CONTRIBUTORS
+        MAKE NO CLAIMS THAT THE SOFTWARE IS SECURE, ACCURATE, OR ERROR-FREE. THE ENTIRE
+        RISK AS TO THE RESULTS AND PERFORMANCE OF THE SOFTWARE IS ASSUMED BY YOU.
+        
+        ---
+        
+        ### 6. Maximum Limitation of Liability
+        
+        TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE CONTRIBUTORS SHALL NOT BE LIABLE FOR
+        ANY DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF
+        BUSINESS PROFITS, SYSTEM DOWNTIME, OR LEGAL FINES) ARISING OUT OF THE USE OF
+        THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+        
+        ---
+        
+        ### 7. Indemnification
+        
+        You agree to indemnify, defend, and hold harmless the Contributors from any
+        claims, lawsuits, or expenses (including attorneys' fees) arising from:
+        
+        - Your unauthorized use of the tool.
+        - Your violation of these terms.
+        - Claims brought by your employer or third parties regarding data processed by the tool.
+        
+        ---
+        
+        ### 8. Acceptance & Consent Record
+        
+        Execution of the Software constitutes binding acceptance of these terms. The
+        Software locally logs a cryptographic record of your agreement including
+        timestamp and terms version. You acknowledge that your decision to proceed
+        without reading the full terms is a voluntary waiver of your right to do so
+        and does not invalidate your obligations under this Agreement.
+        
+        ---
+        
+        ### 9. Governing Law
+        
+        This Agreement is governed by the laws of India (IT Act, 2000). Any legal
+        proceedings shall be brought exclusively in the courts of [Your City], India.
+        Users outside India are additionally responsible for compliance with
+        cybersecurity laws in their own jurisdiction.
+        
+        ---
+        
+        *CSage Source-Available License — Version 1.0 — All rights reserved.*
+        *Review by a licensed attorney is recommended before public release.*
+        
+Project-URL: Homepage, https://github.com/HIMAVARASAGAR/csage
+Keywords: security,pentesting,ai,vulnerability-scanner
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Security
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE.md
+Requires-Dist: prompt_toolkit>=3.0.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: bcrypt>=4.0.0
+Requires-Dist: certifi>=2024.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Dynamic: license-file
+
+# CSage  
+
+[![Version](https://img.shields.io/badge/version-0.1.2-blue.svg)](https://github.com/HIMAVARASAGAR/csage)
+[![Python](https://img.shields.io/badge/python-3.10%2B-green.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-Source--Available-orange.svg)](LICENSE.md)
+
+**CSage** is a professional, AI-powered cybersecurity testing assistant designed for developers and security researchers. 
+
+Unlike conventional "black-box" scanners, CSage utilizes the **Navigator Model**: an intent-driven pipeline where the AI acts as an expert consultant—analyzing targets, formulating step-by-step testing plans, and providing precise, explained commands—while you maintain absolute control over execution.
+
+---
+
+##  Key Features
+
+- **Navigator Architecture**: Intent-driven testing where AI advises and users authorize.
+- **Smart Tool Discovery**: Automatically detects, installs, and configures industry-standard tools (`nmap`, `sqlmap`, `gobuster`, etc.).
+- **Hybrid AI Engine**: Seamlessly switch between local models (Ollama, LM Studio) and cloud high-performance providers (Groq, OpenAI, Gemini).
+- **Tamper-Evident Logging**: Every command and finding is recorded in an HMAC hash-chained log for forensic integrity.
+- **Security Checkpoints**: High-risk operations require explicit user confirmation and re-authentication.
+
+---
+
+##  Installation
+
+CSage is optimized for macOS, Linux, and Windows (via WSL).
+
+1.  **Clone & Navigate**:
+    ```bash
+    git clone https://github.com/HIMAVARASAGAR/csage.git
+    cd csage
+    ```
+
+2.  **Global Installation**:
+    ```bash
+    pip3 install .
+    ```
+
+3.  **Dependency Setup**:
+    CSage will automatically check for required security binaries on its first run. You can also manually trigger this with:
+    ```bash
+    csage tools install
+    ```
+
+---
+
+##  CLI Reference
+
+### Main Commands
+
+| Command | Alias | Description |
+| :--- | :--- | :--- |
+| `csage scan` | - | Start an interactive, AI-guided security audit. |
+| `csage model` | - | Configure AI providers, models, and API keys. |
+| `csage logs` | - | View session history and verify log integrity. |
+| `csage tools` | `packages` | Manage localized security tool installations. |
+| `csage config` | - | Manage user account, passwords, and global settings. |
+| `csage cleanup` | - | Remove temporary files, caches, and optionally logs. |
+| `csage version` | - | Display current version and terms status. |
+| `csage terms` | - | View the End User License Agreement (EULA). |
+| `csage ai-test` | - | Specialized module for testing AI prompt security. |
+| `csage reset` | `factory-reset`| **Danger Zone**: Wipe all local configuration and accounts. |
+
+### Subcommand Details
+
+*   **Scanning**: 
+    - `csage scan --url <url>` : Target a specific web application.
+    - `csage scan --target <path>` : Target a local source code directory.
+*   **Logging**:
+    - `csage logs show <session_id>` : Display a chronological narrative of a specific session.
+    - `csage logs --verify` : Validate the HMAC integrity of all session logs.
+*   **Tool Registry (New)**:
+    - CSage now features a persistent registry at `~/.csage/tools.json`.
+    - `csage tools add <name> [cmd]` : Add a custom tool. If `cmd` is omitted, the **AI will generate it** for your OS.
+    - `csage tools remove <name>` : Remove a custom tool from the registry.
+    - **In-Scan Auto-Setup**: If the AI recommends a tool you don't have, it will automatically offer to install it using its internal knowledge of your OS.
+*   **Config**:
+    - `csage config password` : Change your local authentication password.
+    - `csage config keys-remove <provider>` : Safely purge an API key from local storage.
+
+---
+
+##  Interactive Session Commands
+
+Once inside a scanning session, use these primary controls to interact with the AI assistant:
+
+- **`[next]` (or Enter)**: Requests the next recommended step from the AI.
+- **`[run]`**: Executes a suggested command (requires user authorization).
+- **`[paste]`**: Paste output from a command you ran manually.
+- **`[ask]`**: Ask a freeform question to the security analyst.
+- **`[report]`**: Generate a structured markdown/HTML/JSON report of current findings.
+- **`[model]`**: Hot-swap the underlying AI model without ending the session.
+- **`[quit]`**: Safely terminate the session and finalize logs.
+
+---
+
+## 🛠️ Troubleshooting & OS Compatibility
+
+ **macOS & Linux**: Officially supported via native dependency mapping.
+ **Windows (Native)**: Supported via `winget`, `pip3`, and `go`. 
+ **Windows (WSL)**: Highly recommended for the best experience.
+
+**Dependency Issues?**
+If `csage tools install` fails to automate a tool setup:
+1.  Check the "Manual Path" provides in the terminal.
+2.  Ensure your package managers (`brew`, `apt`, `winget`, `go`) are up to date and in your PATH.
+3.  Consult the [Official Manual](LICENSE.md) or tool-specific documentation.

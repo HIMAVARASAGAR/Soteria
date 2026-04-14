@@ -499,7 +499,8 @@ def cmd_factory_reset(args):
     if not login_gate():
         sys.exit(1)
 
-    _b.print(c("\n  ⚠  RESET — This will wipe all CSage configuration.", RED+"\033[1m"))
+    from csage.utils.display import c, RED, BOLD, ORANGE, GRAY, GREEN
+    _b.print(c("\n  ⚠  RESET — This will wipe all CSage configuration.", RED+BOLD))
     _b.print(c("  This includes: model config, API keys, user account, logs.", ORANGE))
     _b.print(c("  This cannot be undone.", RED))
     _b.print()
@@ -508,12 +509,12 @@ def cmd_factory_reset(args):
         return
 
     try:
-        confirm = input(c("  Type RESET to confirm: ", "\033[1m"+ORANGE)).strip()
+        confirm = input(c("  Type RESET to confirm: ", BOLD+ORANGE)).strip()
     except (EOFError, KeyboardInterrupt):
         confirm = ""
 
     if confirm != "RESET":
-        _b.print(c("  Cancelled.", "\033[90m"))
+        _b.print(c("  Cancelled.", GRAY))
         return
 
     import shutil
@@ -564,23 +565,25 @@ def cmd_aitest(args):
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 def main():
+    from csage.utils.display import c, VIOLET, BOLD, WHITE, GRAY, ORANGE, GREEN, RED
+    banner = f"""
+{c("  USAGE EXAMPLES", BOLD+VIOLET)}
+  {c("Direct Scan (URL):", GRAY)}    csage --url http://127.0.0.1:8080
+  {c("Direct Scan (Path):", GRAY)}   csage --target ./vulnerable-app
+  {c("Guided Scan:", GRAY)}          csage scan --url http://127.0.0.1:8080
+  
+  {c("Setup AI Model:", GRAY)}       csage model
+  {c("Manage Tools:", GRAY)}         csage tools
+  {c("View Sessions:", GRAY)}        csage logs
+  
+{c("For detailed help on a subcommand:", GRAY)} csage <subcommand> --help
+"""
     parser = argparse.ArgumentParser(
         prog="csage",
-        description="CSage — AI-assisted security testing",
+        description=c("CSage — The AI-Assisted Security Navigator", BOLD+WHITE),
         usage="csage [-h] [-t TARGET] [-u URL] [options] [subcommand] ...",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Usage Examples:
-  Direct Scan (URL):    csage --url http://127.0.0.1:8080
-  Direct Scan (Path):   csage --target ./vulnerable-app
-  Guided Scan:          csage scan --url http://127.0.0.1:8080
-  
-  Setup AI Model:       csage model
-  Manage Tools:         csage tools
-  View Sessions:        csage logs
-  
-For detailed help on a subcommand: csage <subcommand> --help
-""",
+        epilog=banner,
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Show verbose output")
     parser.add_argument("--debug",         action="store_true", help="Show debug level logs (v. detailed)")

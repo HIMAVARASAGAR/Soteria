@@ -20,25 +20,38 @@ def _mock_deps():
     bcrypt.checkpw = lambda pwd, hsh: hsh == b"mock_" + pwd
     sys.modules["bcrypt"] = bcrypt
 
-    for mod in ["prompt_toolkit",
-                "prompt_toolkit.key_binding",
-                "prompt_toolkit.keys",
-                "prompt_toolkit.formatted_text",
-                "prompt_toolkit.history"]:
-        sys.modules[mod] = types.ModuleType(mod)
+    pt = types.ModuleType("prompt_toolkit")
+    class Dummy: pass
+    pt.PromptSession = Dummy
+    pt.history = types.ModuleType("prompt_toolkit.history")
+    pt.history.InMemoryHistory = Dummy
+    pt.key_binding = types.ModuleType("prompt_toolkit.key_binding")
+    pt.key_binding.KeyBindings = Dummy
+    pt.keys = types.ModuleType("prompt_toolkit.keys")
+    pt.keys.Keys = Dummy
+    pt.formatted_text = types.ModuleType("prompt_toolkit.formatted_text")
+    pt.formatted_text.ANSI = Dummy
+    
+    sys.modules["prompt_toolkit"] = pt
+    sys.modules["prompt_toolkit.history"] = pt.history
+    sys.modules["prompt_toolkit.key_binding"] = pt.key_binding
+    sys.modules["prompt_toolkit.keys"] = pt.keys
+    sys.modules["prompt_toolkit.formatted_text"] = pt.formatted_text
+    sys.modules["dotenv"] = types.ModuleType("dotenv")
+    sys.modules["certifi"] = types.ModuleType("certifi")
 
 _mock_deps()
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from vexa.core.tool_runner  import classify, safe_tokenize
-from vexa.core.response_validator import (
+from csage.core.tool_runner  import classify, safe_tokenize
+from csage.core.response_validator import (
     parse_response, sanitize_command_output,
     render_fallback, Finding, SuggestedCommand,
 )
-from vexa.utils.logger  import ChainLogger, verify_log
-from vexa.utils.context import _scrub_secrets, _high_entropy, build_context
-import vexa.utils.logger as log_mod
+from csage.utils.logger  import ChainLogger, verify_log
+from csage.utils.context import _scrub_secrets, _high_entropy, build_context
+import csage.utils.logger as log_mod
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -233,7 +246,7 @@ class TestChainLogger:
         assert "tampered" in msg.lower() or "mismatch" in msg.lower()
 
     def test_secret_redaction_in_command(self, tmp_log_dir):
-        from vexa.utils.logger import _redact_command
+        from csage.utils.logger import _redact_command
         cmd = 'curl -H "Authorization: Bearer sk-supersecret123" http://localhost'
         redacted = _redact_command(cmd)
         assert "sk-supersecret123" not in redacted
@@ -287,7 +300,7 @@ class TestContext:
         (tmp_path / "README.md").write_text("# readme")
         (tmp_path / "subdir" / "module.py").write_text("# module")
 
-        from vexa.utils.context import _file_tree
+        from csage.utils.context import _file_tree
         tree = _file_tree(tmp_path, max_depth=1)
         lines = [l for l in tree.split("\n") if "├──" in l or "└──" in l]
 
@@ -315,7 +328,7 @@ class TestContext:
 class TestLLMProviders:
 
     def test_all_cloud_providers_have_required_fields(self):
-        from vexa.core.llm import CLOUD_PROVIDERS
+        from csage.core.llm import CLOUD_PROVIDERS
         required = {"name", "url", "key_env", "key_url",
                     "default_model", "suggested_models", "protocol"}
         for prov_id, prov in CLOUD_PROVIDERS.items():
@@ -323,7 +336,7 @@ class TestLLMProviders:
             assert not missing, f"Provider '{prov_id}' missing: {missing}"
 
     def test_all_local_apps_have_required_fields(self):
-        from vexa.core.llm import LOCAL_APPS
+        from csage.core.llm import LOCAL_APPS
         required = {"name", "default_url", "chat_path", "models_path",
                     "protocol", "default_model"}
         for app_id, app in LOCAL_APPS.items():
@@ -331,7 +344,7 @@ class TestLLMProviders:
             assert not missing, f"App '{app_id}' missing: {missing}"
 
     def test_provider_count(self):
-        from vexa.core.llm import CLOUD_PROVIDERS, LOCAL_APPS
+        from csage.core.llm import CLOUD_PROVIDERS, LOCAL_APPS
         assert len(CLOUD_PROVIDERS) >= 10
         assert len(LOCAL_APPS) >= 9
 
