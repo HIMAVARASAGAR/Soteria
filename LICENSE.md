@@ -1,11 +1,11 @@
-# Vexa EULA and Source-Available License
-**Version 1.0 — 2026**
+# CSage EULA and Source-Available License
+**Version 0.1.2 — 2026**
 
 ---
 
 ### 1. License Grant & Source-Available Terms
 
-Permission is granted to use, modify, and distribute Vexa for internal,
+Permission is granted to use, modify, and distribute CSage for internal,
 non-commercial purposes only. This is a source-available license. You may not
 sell, lease, or monetize this Software or any derivative works without explicit
 written consent. Any unauthorized commercial exploitation constitutes a material
@@ -15,7 +15,7 @@ breach and terminates your license.
 
 ### 2. Authorized Use & Strict Liability
 
-Vexa is a security tool for authorized testing only. You represent that you
+CSage is a security tool for authorized testing only. You represent that you
 will only use it on systems you own or for which you have explicit, written
 permission. The user assumes 100% of all legal and technical risk. Unauthorized
 use is a violation of this contract and applicable cybercrime laws including but
@@ -94,5 +94,5 @@ cybersecurity laws in their own jurisdiction.
 
 ---
 
-*Vexa Source-Available License — Version 1.0 — All rights reserved.*
+*CSage Source-Available License — Version 1.0 — All rights reserved.*
 *Review by a licensed attorney is recommended before public release.*

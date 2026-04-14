@@ -2,7 +2,7 @@
 logger.py — HMAC hash-chained tamper-evident session logging.
 
 Every entry is chained to the previous via HMAC-SHA256.
-A user-derived key (stored in ~/.vexa/.env) signs each entry.
+A user-derived key (stored in ~/.csage/.env) signs each entry.
 Tampering with any entry breaks the chain — provable in court.
 
 Decision log: HMAC chosen over plain SHA-256 because SHA-256 alone
@@ -21,9 +21,9 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-logger = logging.getLogger("vexa.logger")
+logger = logging.getLogger("csage.logger")
 
-CONFIG_DIR  = Path.home() / ".vexa"
+CONFIG_DIR  = Path.home() / ".csage"
 LOG_DIR     = CONFIG_DIR / "logs"
 ENV_FILE    = CONFIG_DIR / ".env"
 
@@ -41,7 +41,7 @@ SENSITIVE_FLAGS = {
 
 def _get_or_create_log_key() -> bytes:
     """
-    Load CODESAGE_LOG_KEY from ~/.vexa/.env.
+    Load CODESAGE_LOG_KEY from ~/.csage/.env.
     Generate and store it if it doesn't exist yet.
     """
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -64,7 +64,7 @@ def _get_or_create_log_key() -> bytes:
 
 
 def _append_env(key: str, value: str):
-    """Append or update a key in ~/.vexa/.env"""
+    """Append or update a key in ~/.csage/.env"""
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     ENV_FILE.parent.mkdir(parents=True, exist_ok=True)
     lines = []

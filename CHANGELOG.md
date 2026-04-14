@@ -1,18 +1,14 @@
-# Vexa Changelog
+# CSage Changelog
 
-## v1.0.0 — 2026
-Initial release.
+## v0.1.2 — 2026
+- **Global Rebranding**: Renamed project from **Vexa** to **CSage** to avoid package name collisions.
+- **Smart Migration**: Added automated data migration from legacy `.vexa` and `.codesage` configuration directories.
+- **Improved Identity**: Hardened AI system prompts and synchronized CLI branding strings.
+- **CI/CD Cleanup**: Removed stale build artifacts and synchronized versioning across all modules.
 
-### Features
-- AI-assisted security testing (navigator model — AI advises, user executes)
-- 15 cloud AI providers + 10 local hosting apps
-- Two-tier execution: setup commands auto-run, pentest commands user-typed only
-- HMAC hash-chained tamper-evident logging
-- bcrypt user authentication with re-auth for high-level operations
-- Forced terms acceptance with scroll gate and forensic consent record
-- Static code scanner (zero dependencies)
-- Context exfiltration protection for cloud backends
-- Exponential backoff for API rate limits
-- shlex.split() with graceful ValueError handling (never shell=True)
-- Report export: .md, .html, .json
-- CLI subcommands: scan, config, model, logs, packages, cleanup, reset, terms, version
+## v0.1.1 — 2026
+- Initial release under the Vexa name.
+- AI-assisted security testing with two-tier command execution.
+- bcrypt authentication and HMAC-chained logging.
+- Static code scanner and context protection.
+- Support for 15+ cloud AI providers.

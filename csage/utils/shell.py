@@ -8,7 +8,7 @@ import sys
 import platform
 import logging
 
-logger = logging.getLogger("vexa.shell")
+logger = logging.getLogger("csage.shell")
 
 def get_shell_info():
     """

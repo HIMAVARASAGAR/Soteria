@@ -16,10 +16,12 @@ import shutil
 import sys
 import logging
 import platform
+import builtins
 from dataclasses import dataclass, field
-from vexa.utils.shell import get_shell_info
+from csage.utils.shell import get_shell_info
+from csage.core.tool_registry import registry
 
-logger = logging.getLogger("vexa.runner")
+logger = logging.getLogger("csage.runner")
 
 # ── Safe install prefixes (first token must be one of these) ──────────────────
 SAFE_INSTALL_PREFIXES = {
@@ -66,17 +68,18 @@ DESTRUCTIVE = {"rm ", "rmdir", "dd ", "mkfs", "format", "shred"}
 # Manual download links for Zero-Assumption fallback
 MANUAL_TOOL_LINKS = {
     "nmap":     "https://nmap.org/download.html",
-    "nikto":    "https://github.com/sullo/nikto",
-    "sqlmap":   "https://sqlmap.org/",
-    "gobuster": "https://github.com/OJ/gobuster",
-    "ffuf":     "https://github.com/ffuf/ffuf",
+    "nikto":    "https://github.com/sullo/nikto#installation",
+    "sqlmap":   "https://github.com/sqlmapproject/sqlmap/wiki/Installation",
+    "gobuster": "https://github.com/OJ/gobuster#installation",
+    "ffuf":     "https://github.com/ffuf/ffuf#installation",
     "curl":     "https://curl.se/download.html",
     "openssl":  "https://www.openssl.org/source/",
-    "wfuzz":    "https://github.com/xmendez/wfuzz",
-    "semgrep":  "https://semgrep.dev/docs/install/",
-    "sslyze":   "https://github.com/nabla-c0d3/sslyze",
-    "hydra":    "https://github.com/vanhauser-thc/thc-hydra",
-    "wapiti":   "https://wapiti-scanner.github.io/",
+    "wfuzz":    "https://wfuzz.readthedocs.io/en/latest/user/installation.html",
+    "semgrep":  "https://semgrep.dev/docs/installing-semgrep-community/",
+    "sslyze":   "https://github.com/nabla-c0d3/sslyze#installation",
+    "hydra":    "https://github.com/vanhauser-thc/thc-hydra#installation",
+    "wapiti":   "https://wapiti-scanner.github.io/manual.html#installation",
+    "whatweb":  "https://github.com/urbanadventurer/WhatWeb#installation",
 }
 
 
@@ -184,7 +187,7 @@ def run_setup_command(command: str, show_output: bool = True) -> RunResult:
     Uses shlex.split() + shell=False always.
     Refuses and returns RunResult(allowed=False) if classify() blocks it.
     """
-    from vexa.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD
+    from csage.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD
 
     result = RunResult(command=command, allowed=False)
 
@@ -284,8 +287,8 @@ def execute_risky_flow(suggested_command: str, explanation: str,
     Decision log: Command executed = exactly what user typed.
     AI never modifies commands before execution.
     """
-    from vexa.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED, GRAY, YELLOW
-    from vexa.utils.auth import require_reauth
+    from csage.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED, GRAY, YELLOW
+    from csage.utils.auth import require_reauth
     import builtins
 
     builtins.print()
@@ -402,7 +405,7 @@ def execute_risky_flow(suggested_command: str, explanation: str,
         result.error   = f"Tool not found: {tokens[0]}"
         result.ran     = True
         builtins.print(c(f"  ✗ {result.error}", ORANGE))
-        builtins.print(c(f"  Install it first: vexa packages install {tokens[0]}", GRAY))
+        builtins.print(c(f"  Install it first: csage packages install {tokens[0]}", GRAY))
     except Exception as e:
         result.error = str(e)
         result.ran   = True
@@ -426,7 +429,7 @@ def execute_risky_flow(suggested_command: str, explanation: str,
 
 TOOL_INSTALL = {
     "nmap":     {"linux": "sudo apt-get install -y nmap",     "mac": "brew install nmap",    "win": "winget install nmap"},
-    "nikto":    {"linux": "sudo apt-get install -y nikto",    "mac": "brew install nikto",   "win": "python -c \"print('Nikto has no native Windows installer. Use WSL or download manually.')\""},
+    "nikto":    {"linux": "sudo apt-get install -y nikto",    "mac": "brew install nikto",   "win": "python -m pip install nikto-wrapper || echo 'Nikto not natively supported on Windows. Use WSL or Docker.'"},
     "sqlmap":   {"linux": "sudo apt-get install -y sqlmap",   "mac": "brew install sqlmap",  "win": "pip3 install sqlmap"},
     "gobuster": {"linux": "sudo apt-get install -y gobuster", "mac": "brew install gobuster","win": "go install github.com/OJ/gobuster/v3@latest"},
     "ffuf":     {"linux": "sudo apt-get install -y ffuf",     "mac": "brew install ffuf",    "win": "go install github.com/ffuf/ffuf@latest"},
@@ -435,8 +438,9 @@ TOOL_INSTALL = {
     "wfuzz":    {"linux": "pip3 install wfuzz",               "mac": "pip3 install wfuzz",   "win": "pip3 install wfuzz"},
     "semgrep":  {"linux": "pip3 install semgrep",             "mac": "pip3 install semgrep", "win": "pip3 install semgrep"},
     "sslyze":   {"linux": "pip3 install sslyze",              "mac": "pip3 install sslyze",  "win": "pip3 install sslyze"},
-    "hydra":    {"linux": "sudo apt-get install -y hydra",    "mac": "brew install hydra",   "win": "python -c \"print('Hydra has no native Windows installer. Use WSL or download manually.')\""},
+    "hydra":    {"linux": "sudo apt-get install -y hydra",    "mac": "brew install hydra",   "win": "winget install hydra"},
     "wapiti":   {"linux": "pip3 install wapiti3",             "mac": "pip3 install wapiti3", "win": "pip3 install wapiti3"},
+    "whatweb":  {"linux": "sudo apt-get install -y whatweb",  "mac": "brew install whatweb", "win": "gem install whatweb"},
 }
 
 
@@ -449,15 +453,15 @@ def check_tools(names: list[str]) -> list[dict]:
         
     results = []
     for name in names:
-        info = TOOL_INSTALL.get(name, {})
-        install_cmd = info.get(os_type, "")
+        installers = registry.get_installer(name)
+        install_cmd = installers.get(os_type, "")
         
         path = shutil.which(name) or ""
         
         # Check if the package manager itself exists
         mgr_bin = _get_installer_binary(install_cmd)
         mgr_present = bool(shutil.which(mgr_bin)) if mgr_bin else True
-        if install_cmd.startswith("python"): mgr_present = True # always assume python can run python scripts
+        if install_cmd.startswith("python"): mgr_present = True
             
         results.append({
             "name":            name,
@@ -466,13 +470,34 @@ def check_tools(names: list[str]) -> list[dict]:
             "install_cmd":     install_cmd or f"# No installer for {name}",
             "manager_binary":  mgr_bin,
             "manager_present": mgr_present,
-            "manual_link":     MANUAL_TOOL_LINKS.get(name, "https://google.com/search?q="+name+"+security+tool"),
+            "manual_link":     registry.get_link(name),
         })
     return results
 
 
-def install_missing_tools(names: list[str], ask: bool = True) -> dict[str, bool]:
-    from vexa.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD, YELLOW
+def get_ai_install_command(tool_name: str, llm_client) -> str:
+    """Ask the AI to generate a one-liner install command for a tool."""
+    from csage.utils.shell import get_shell_info
+    shell = get_shell_info()
+    os_name = shell['os']
+    if shell['is_wsl']: os_name = "WSL/Linux"
+    
+    prompt = (
+        f"I need a single shell command to install the security tool '{tool_name}' on {os_name}. "
+        "Provide ONLY the command string itself, no markdown, no explanation. "
+        "Examples: 'brew install nmap' or 'sudo apt-get install -y nikto'. "
+        "If it is a python tool, use 'pip3 install ...'. If it is a go tool, use 'go install ...@latest'."
+    )
+    try:
+        resp = llm_client.chat("You are a system administrator providing concise installation commands.", 
+                               [{"role": "user", "content": prompt}])
+        return resp.strip().strip("`").strip("'").strip('"')
+    except Exception:
+        return ""
+
+
+def install_missing_tools(names: list[str], ask: bool = True, llm_client=None) -> dict[str, bool]:
+    from csage.utils.display import c, GREEN, ORANGE, CYAN, GRAY, BOLD, YELLOW, RED
     import builtins
 
     statuses  = check_tools(names)
@@ -507,17 +532,41 @@ def install_missing_tools(names: list[str], ask: bool = True) -> dict[str, bool]
     for s in missing:
         builtins.print(c(f"\n  Checking requirements for {s['name']}...", CYAN))
         
-        if s["manager_present"] and s["install_cmd"] and not s["install_cmd"].startswith("python"):
-            result = run_setup_command(s["install_cmd"])
-            results[s["name"]] = result.success
-            if not result.success:
-                builtins.print(c(f"  Automated install failed.", ORANGE))
-                builtins.print(c(f"  Manual install required: {s['manual_link']}", GRAY))
-        else:
-            # Manager missing or tool has no installer (like nikto on win)
-            reason = f"Package manager '{s['manager_binary']}' not found." if s["manager_binary"] else "No native installer available for this OS."
-            builtins.print(c(f"  ✗ {reason}", ORANGE))
-            builtins.print(c(f"  Download manually: ", BOLD) + c(s['manual_link'], GREEN))
+        try:
+            can_auto = s["manager_present"] and s["install_cmd"] and "No installer" not in s["install_cmd"] and "docker" not in s["install_cmd"].lower()
+            
+            # AI Fallback: if no installer known, try to ask AI
+            if not can_auto and llm_client:
+                builtins.print(c(f"  AI is generating an install command for {s['name']}...", GRAY))
+                ai_cmd = get_ai_install_command(s["name"], llm_client)
+                if ai_cmd:
+                    builtins.print(c(f"  AI suggested: ", CYAN) + c(ai_cmd, BOLD))
+                    s["install_cmd"] = ai_cmd
+                    can_auto = True
+
+            if can_auto:
+                result = run_setup_command(s["install_cmd"])
+                results[s["name"]] = result.success
+                if not result.success:
+                    builtins.print(c(f"\n  ┌─ Automated Install Failed " + "─"*34, ORANGE))
+                    builtins.print(c("  │", ORANGE))
+                    builtins.print(c(f"  │  Tool: {s['name']}", ORANGE))
+                    builtins.print(c(f"  │  Error: Automated installation encountered a problem.", ORANGE))
+                    builtins.print(c("  │", ORANGE))
+                    builtins.print(c("  │  Please install manually via official documentation:", ORANGE))
+                    builtins.print(c(f"  │  {s['manual_link']}", BOLD+GREEN))
+                    builtins.print(c("  │", ORANGE))
+                    builtins.print(c("  └" + "─"*61, ORANGE))
+            else:
+                # Manager missing or tool has no installer
+                reason = f"Package manager '{s['manager_binary']}' not found." if s["manager_binary"] else "No native installer available for this OS."
+                builtins.print(c(f"  ✗ {reason}", ORANGE))
+                builtins.print(c(f"  Official Documentation: ", BOLD) + c(s['manual_link'], GREEN))
+                results[s['name']] = False
+                
+        except Exception as e:
+            builtins.print(c(f"  ✗ Installation error: {e}", RED))
+            builtins.print(c(f"  Manual path: {s['manual_link']}", GRAY))
             results[s['name']] = False
 
     return results

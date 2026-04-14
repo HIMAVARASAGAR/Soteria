@@ -19,11 +19,11 @@ from pathlib import Path
 
 import bcrypt
 
-from vexa import CURRENT_TERMS_VERSION
+from csage import CURRENT_TERMS_VERSION
 
-logger = logging.getLogger("vexa.auth")
+logger = logging.getLogger("csage.auth")
 
-CONFIG_DIR = Path.home() / ".vexa"
+CONFIG_DIR = Path.home() / ".csage"
 AUTH_FILE  = CONFIG_DIR / "auth.json"
 
 MAX_ATTEMPTS  = 3
@@ -62,12 +62,12 @@ def setup_account() -> bool:
     Interactive account creation on first run.
     Returns True on success.
     """
-    from vexa.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED
+    from csage.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED
     import builtins
 
     builtins.print()
     builtins.print(c("  ╔══════════════════════════════════════════╗", CYAN))
-    builtins.print(c("  ║         Create Your Vexa Account     ║", CYAN))
+    builtins.print(c("  ║         Create Your CSage Account     ║", CYAN))
     builtins.print(c("  ╚══════════════════════════════════════════╝", CYAN))
     builtins.print()
     builtins.print(c("  Your credentials are stored locally only.", GREEN))
@@ -86,14 +86,14 @@ def setup_account() -> bool:
 
     # Age confirmation
     builtins.print()
-    builtins.print(c("  Vexa is for users 18 years of age or older.", ORANGE))
+    builtins.print(c("  CSage is for users 18 years of age or older.", ORANGE))
     try:
         age_confirm = input(c("  I confirm I am 18 or older [y/n]: ", BOLD+ORANGE)).strip().lower()
     except (EOFError, KeyboardInterrupt):
         return False
 
     if age_confirm not in ("y", "yes"):
-        builtins.print(c("  You must be 18 or older to use Vexa.", RED))
+        builtins.print(c("  You must be 18 or older to use CSage.", RED))
         return False
 
     # Password
@@ -144,7 +144,7 @@ def login() -> bool:
     Returns True on success.
     """
     global SESSION_TOKEN
-    from vexa.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED
+    from csage.utils.display import c, BOLD, CYAN, GREEN, ORANGE, RED
     import builtins
 
     auth = _load_auth()
@@ -153,11 +153,11 @@ def login() -> bool:
 
     if auth.get("locked"):
         builtins.print(c("  Account locked after too many failed attempts.", RED))
-        builtins.print(c("  Delete ~/.vexa/auth.json to reset (this wipes all config).", ORANGE))
+        builtins.print(c("  Delete ~/.csage/auth.json to reset (this wipes all config).", ORANGE))
         return False
 
     builtins.print()
-    builtins.print(c("  Vexa — Authentication Required", BOLD))
+    builtins.print(c("  CSage — Authentication Required", BOLD))
     builtins.print()
 
     try:
@@ -207,7 +207,7 @@ def require_reauth(reason: str = "") -> bool:
     Prompt user to re-enter password for high-level operations.
     Returns True if confirmed.
     """
-    from vexa.utils.display import c, BOLD, ORANGE, GREEN, RED
+    from csage.utils.display import c, BOLD, ORANGE, GREEN, RED
     import builtins
 
     auth = _load_auth()
@@ -293,7 +293,7 @@ def mark_tools_setup_done():
 # ── Change password ───────────────────────────────────────────────────────────
 
 def change_password() -> bool:
-    from vexa.utils.display import c, BOLD, CYAN, GREEN, ORANGE
+    from csage.utils.display import c, BOLD, CYAN, GREEN, ORANGE
     import builtins
 
     if not require_reauth("change password"):

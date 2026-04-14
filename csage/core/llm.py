@@ -20,8 +20,9 @@ import urllib.request
 import urllib.error
 import subprocess
 import shutil
+import os
 
-logger = logging.getLogger("vexa.llm")
+logger = logging.getLogger("csage.llm")
 
 # ── Provider catalogue ────────────────────────────────────────────────────────
 
@@ -466,7 +467,8 @@ class LLMClient:
         import ssl
         import certifi
         if "User-Agent" not in headers and "user-agent" not in {k.lower() for k in headers}:
-            headers["User-Agent"] = "Vexa/1.0 (Security Tester)"
+            from csage import __version__
+            headers["User-Agent"] = f"CSage/{__version__} (Security Tester)"
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers=headers)
         context = ssl.create_default_context(cafile=certifi.where())
@@ -565,3 +567,54 @@ def ollama_start_server() -> bool:
         return False
     except Exception:
         return False
+
+
+def stop_local_server(provider: str, base_url: str) -> tuple[bool, str]:
+    """
+    Attempt to stop the local LLM server.
+    Tries port-based identification (lsof) first, then falls back to name-based kill.
+    """
+    import signal
+    from urllib.parse import urlparse
+
+    # 1. Try port-based identification
+    try:
+        port = urlparse(base_url).port
+        if port:
+            # lsof -ti :port returns only the PID
+            if shutil.which("lsof"):
+                pids = subprocess.check_output(["lsof", "-ti", f":{port}"], text=True).split()
+                if pids:
+                    for pid in pids:
+                        os.kill(int(pid), signal.SIGTERM)
+                    return True, f"Stopped process(es) on port {port}"
+    except Exception:
+        pass
+
+    # 2. Fallback to name-based signals for known apps
+    known_pkills = {
+        "ollama":   ["ollama"],
+        "lmstudio": ["LM Studio"],
+        "jan":      ["Jan"],
+        "llamacpp": ["server"],
+        "kobold":   ["koboldcpp"],
+        "textgen":  ["python", "python3"], # Risky, but common
+    }
+    
+    apps_to_kill = known_pkills.get(provider, [provider] if provider != "custom" else [])
+    if not apps_to_kill:
+        return False, "No known process signature for this provider."
+
+    killed = False
+    for app in apps_to_kill:
+        if shutil.which("pkill"):
+            try:
+                subprocess.run(["pkill", "-f", app], check=True)
+                killed = True
+            except subprocess.CalledProcessError:
+                pass
+    
+    if killed:
+        return True, f"Attempted to stop '{', '.join(apps_to_kill)}' via signal."
+    
+    return False, "Could not identify or stop local server."

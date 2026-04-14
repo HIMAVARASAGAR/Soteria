@@ -24,12 +24,13 @@ def c(text, color=""):
     return f"{color}{text}{RESET}" if (color and sys.stdout.isatty()) else str(text)
 
 def banner():
+    from csage import __version__
     _b.print("\n".join([
         "",
-        c("  ╔══════════════════════════════════════════╗", CYAN),
-        c("  ║  ", CYAN) + c("Vexa", BOLD+GREEN) + c(" — AI Security Assistant     ║", CYAN),
-        c("  ║  ", CYAN) + c("For YOUR own systems only              ║", GRAY),
-        c("  ╚══════════════════════════════════════════╝", CYAN),
+        c("  ╔═══════════════════════════════════════════════════════╗", CYAN),
+        c("  ║  ", CYAN) + c(f"CSage v{__version__}", BOLD+GREEN) + c(" — AI Security Assistant          ║", CYAN),
+        c("  ║  ", CYAN) + c("For YOUR own systems only                       ║", GRAY),
+        c("  ╚═══════════════════════════════════════════════════════╝", CYAN),
         "",
         c("  [!] Only test systems you own or are authorized to test.", ORANGE),
         "",
@@ -71,7 +72,7 @@ def render_finding(finding) -> None:
     Render a Finding dataclass object.
     This is the ONLY place findings are rendered — no re-parsing elsewhere.
     """
-    from vexa.core.response_validator import Finding
+    from csage.core.response_validator import Finding
     if not isinstance(finding, Finding):
         print_finding(finding if isinstance(finding, dict) else vars(finding))
         return
@@ -97,7 +98,7 @@ def render_command(cmd) -> None:
     Render a SuggestedCommand dataclass object.
     Displayed clearly — never auto-executed.
     """
-    from vexa.core.response_validator import SuggestedCommand
+    from csage.core.response_validator import SuggestedCommand
     risk_color = {"LOW": GREEN, "MEDIUM": YELLOW, "HIGH": ORANGE}.get(
         getattr(cmd, "risk", "MEDIUM"), WHITE
     )
@@ -115,7 +116,7 @@ def render_command(cmd) -> None:
 
 def render_narrative(text: str) -> None:
     """Render plain text narrative from AI — strip markdown to clean terminal text."""
-    from vexa.utils.input_handler import strip_markdown
+    from csage.utils.input_handler import strip_markdown
     clean = strip_markdown(text)
     for line in clean.split("\n"):
         _b.print(line)

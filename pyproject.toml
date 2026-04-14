@@ -3,16 +3,16 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
-Homepage = "https://github.com/HIMAVARASAGAR/vexa"
+Homepage = "https://github.com/HIMAVARASAGAR/csage"
 
 [project]
-name = "vexa"
-version = "1.0.0"
+name = "csage"
+version = "0.1.2"
 description = "AI-assisted security testing tool with intent-driven execution"
 readme = "README.md"
 license = { file = "LICENSE.md" }
 requires-python = ">=3.10"
-authors = [{ name = "Vexa Labs" }]
+authors = [{ name = "CSage Labs" }]
 keywords = ["security", "pentesting", "ai", "vulnerability-scanner"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -32,14 +32,14 @@ dependencies = [
 ]
 
 [project.scripts]
-vexa = "vexa.cli:main"
+csage = "csage.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["vexa*"]
+include = ["csage*"]
 
 [tool.setuptools.package-data]
-"vexa.data" = ["wordlists/*"]
+"csage.data" = ["wordlists/*"]

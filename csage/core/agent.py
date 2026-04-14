@@ -17,29 +17,29 @@ import builtins as _b
 from datetime import datetime
 from pathlib import Path
 
-from vexa.core.llm import LLMClient, TransientError, FatalError
-from vexa.core.scanner import StaticScanner
-from vexa.core.tool_runner import (
+from csage.core.llm import LLMClient, TransientError, FatalError
+from csage.core.scanner import StaticScanner
+from csage.core.tool_runner import (
     install_missing_tools, classify, execute_risky_flow,
 )
-from vexa.core.response_validator import (
+from csage.core.response_validator import (
     parse_response, sanitize_command_output, sanitize_static_findings,
     render_fallback, make_retry_prompt, ParsedResponse, Finding,
 )
-from vexa.utils.display import (
+from csage.utils.display import (
     print_section, print_info, print_finding, print_error,
     print_warning, print_ok, print_output_received, prompt_user,
     render_parsed_response, render_narrative, c,
     BOLD, CYAN, GREEN, YELLOW, ORANGE, RED, GRAY, WHITE, SEV_COLORS,
 )
-from vexa.utils.context import build_context
-from vexa.utils.input_handler import get_input, get_multiline_input, thinking
-from vexa.utils.logger import ChainLogger
+from csage.utils.context import build_context
+from csage.utils.input_handler import get_input, get_multiline_input, thinking
+from csage.utils.logger import ChainLogger
 import uuid
 
-logger = logging.getLogger("vexa.agent")
+logger = logging.getLogger("csage.agent")
 
-SYSTEM_PROMPT = """You are Vexa, a professional cybersecurity analyst assistant.
+SYSTEM_PROMPT = """You are CSage, a professional cybersecurity analyst assistant.
 You help developers find and understand vulnerabilities in their OWN applications.
 
 YOUR ROLE — ANALYST AND ADVISOR ONLY:
@@ -50,15 +50,15 @@ YOUR ROLE — ANALYST AND ADVISOR ONLY:
 - If asked to generate exploits, refuse and explain why
 
 YOUR IDENTITY & ORIGIN (STRICT RULE):
-- You MUST ALWAYS identify yourself ONLY as "Vexa". 
+- You MUST ALWAYS identify yourself ONLY as "CSage". 
 - You MUST NEVER reveal the underlying LLM model (e.g. Meta Llama, OpenAI, Anthropic, Gemini) you are powered by.
-- If asked about your creators, makers, or development, you MUST state: "I am Vexa, a professional cybersecurity assistant designed to help developers identify and fix vulnerabilities. I cannot discuss the details of my creators or development."
+- If asked about your creators, makers, or development, you MUST state: "I am CSage, a professional cybersecurity assistant designed to help developers identify and fix vulnerabilities. I cannot discuss the details of my creators or development."
 
 YOUR BOUNDARIES (STRICT RULE):
 - You focus ONLY on security analysis and testing.
 - For any questions regarding your configuration, AI model setup, API keys, or security tool installation, you MUST point the user to the external CLI commands:
-    - AI Model/Keys: Use `vexa model`
-    - Security Tools: Use `vexa tools`
+    - AI Model/Keys: Use `csage model`
+    - Security Tools: Use `csage tools`
 - NEVER try to guide the user through setting up their environment manually inside this chat.
 
 HOW YOU WORK:
@@ -214,7 +214,7 @@ class Agent:
         print_section("Tool Setup")
         print_info(f"Checking tools for scope: {c(self.scope, BOLD)}")
         _b.print()
-        self.tool_status = install_missing_tools(needed, ask=True)
+        self.tool_status = install_missing_tools(needed, ask=True, llm_client=self.llm)
 
     # ── Interactive loop ──────────────────────────────────────────────────────
 
@@ -242,6 +242,9 @@ class Agent:
             elif choice in ("run",):
                 self._handle_run_risky()
             elif choice in ("next","n",""):
+                # Special check: Before recommending the next command, 
+                # check if the *previous* recommendation had missing tools.
+                # Actually, better to check the parsed tool from AI response.
                 self._handle_freeform("What should I do next? Give me the next command to run.")
             elif choice in ("ask","a"):
                 q = get_input("Your question:").strip()
@@ -291,6 +294,24 @@ class Agent:
         suggested = get_input("What command did the AI suggest? (paste it):").strip()
         if not suggested:
             return
+        
+        # Deep dependency check: Before running the risky flow, verify the binary
+        import shlex
+        import shutil
+        try:
+            tokens = shlex.split(suggested)
+            if tokens:
+                binary = tokens[0].lstrip("./")
+                if not shutil.which(binary):
+                    from csage.utils.display import print_warning
+                    print_warning(f"Required tool '{binary}' is missing.")
+                    self.tool_status = install_missing_tools([binary], ask=True, llm_client=self.llm)
+                    if not self.tool_status.get(binary, False):
+                        print_error(f"Cannot run command without {binary}.")
+                        return
+        except Exception:
+            pass
+
         explanation = get_input("Explanation (optional):").strip()
         result = execute_risky_flow(
             suggested, explanation,
@@ -396,7 +417,7 @@ class Agent:
 
     def _offline_report(self) -> str:
         lines = [
-            "# Vexa Security Report (offline)",
+            "# CSage Security Report (offline)",
             f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
             f"Target: {self.target_path or ''} {self.target_url or ''}",
             "\n## Findings\n",
@@ -429,7 +450,7 @@ class Agent:
             elif path.suffix == ".html":
                 path.write_text(self._html_report(content))
             else:
-                header = (f"# Vexa Report\n"
+                header = (f"# CSage Report\n"
                           f"Generated: {self.start_time.strftime('%Y-%m-%d %H:%M')}\n"
                           f"Target: {self.target_path or ''} {self.target_url or ''}\n"
                           f"Model: {self.llm.display_name}\n\n")
@@ -457,7 +478,7 @@ class Agent:
                      f'<td>{html.escape((f.fix or "")[:80])}</td>'
                      f'</tr>\n')
         return f"""<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>Vexa Report</title>
+<html lang="en"><head><meta charset="utf-8"><title>CSage Report</title>
 <style>
 body{{font-family:monospace;background:#0a0c0f;color:#e8edf5;padding:2rem;max-width:960px;margin:auto;line-height:1.6}}
 h1{{color:#00ff88}}h2{{color:#00cfff;border-bottom:1px solid #1e2330;padding-bottom:.3em;margin-top:2em}}
@@ -467,7 +488,7 @@ th{{text-align:left;color:#5a6478;font-size:.8em;padding:.5em;border-bottom:1px 
 td{{padding:.5em;border-bottom:1px solid #111318;font-size:.9em}}
 .meta{{color:#5a6478;font-size:.85em;margin-bottom:2rem;line-height:2}}
 </style></head><body>
-<h1>Vexa Security Report</h1>
+<h1>CSage Security Report</h1>
 <div class="meta">
   <b>Generated:</b> {self.start_time.strftime('%Y-%m-%d %H:%M')}<br>
   <b>Target:</b> {html.escape(str(self.target_path or ''))} {html.escape(str(self.target_url or ''))}<br>
@@ -484,7 +505,7 @@ td{{padding:.5em;border-bottom:1px solid #111318;font-size:.9em}}
     # ── Misc ──────────────────────────────────────────────────────────────────
 
     def _switch_model(self):
-        from vexa.core.model_picker import run_picker
+        from csage.core.model_picker import run_picker
         print_section("Switch Model")
         print_info("Conversation history preserved.")
         try:
@@ -495,6 +516,17 @@ td{{padding:.5em;border-bottom:1px solid #111318;font-size:.9em}}
             print_error(f"Model switch failed: {e}")
 
     def _confirm_ownership(self) -> bool:
+        if not self.target_path and not self.target_url:
+            from csage.utils.display import prompt_user
+            _b.print(c("\n  No target provided up-front.", YELLOW))
+            t = prompt_user("Enter target (URL or project path):").strip()
+            if not t:
+                return False
+            if t.startswith("http") or "://" in t:
+                self.target_url = t
+            else:
+                self.target_path = t
+
         target = self.target_path or self.target_url or "(none)"
         _b.print()
         _b.print(c("  ┌─ LEGAL CONFIRMATION " + "─"*40, ORANGE))
