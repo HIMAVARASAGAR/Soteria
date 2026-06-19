@@ -1,0 +1,603 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@11.6.2
+2 info using node@v25.2.1
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/kakihimavarasagar/Downloads/codesage/.npmrc
+5 silly config load:file:/Users/kakihimavarasagar/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install bun
+8 verbose argv "install" "--save-dev" "bun" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:/Users/kakihimavarasagar/Downloads/codesage/.npm-cache/_logs/2026-06-14T11_42_36_359Z-
+10 verbose logfile /Users/kakihimavarasagar/Downloads/codesage/.npm-cache/_logs/2026-06-14T11_42_36_359Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly fetch manifest bun@*
+15 silly packumentCache full:https://registry.npmjs.org/bun cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/bun 643ms (cache miss)
+17 silly packumentCache full:https://registry.npmjs.org/bun set size:undefined disposed:false
+18 silly placeDep ROOT bun@1.3.14 OK for: @gitlawb/openclaude@0.18.0 want: *
+19 silly fetch manifest @oven/bun-darwin-aarch64@1.3.14
+20 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-darwin-aarch64 cache-miss
+21 silly fetch manifest @oven/bun-darwin-x64@1.3.14
+22 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-darwin-x64 cache-miss
+23 silly fetch manifest @oven/bun-darwin-x64-baseline@1.3.14
+24 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-darwin-x64-baseline cache-miss
+25 silly fetch manifest @oven/bun-linux-aarch64@1.3.14
+26 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-aarch64 cache-miss
+27 silly fetch manifest @oven/bun-linux-x64@1.3.14
+28 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64 cache-miss
+29 silly fetch manifest @oven/bun-linux-x64-baseline@1.3.14
+30 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-baseline cache-miss
+31 silly fetch manifest @oven/bun-linux-aarch64-musl@1.3.14
+32 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-aarch64-musl cache-miss
+33 silly fetch manifest @oven/bun-linux-x64-musl@1.3.14
+34 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-musl cache-miss
+35 silly fetch manifest @oven/bun-linux-x64-musl-baseline@1.3.14
+36 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-musl-baseline cache-miss
+37 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-x64-musl 579ms (cache miss)
+38 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-musl set size:undefined disposed:false
+39 silly fetch manifest @oven/bun-linux-aarch64-android@1.3.14
+40 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-aarch64-android cache-miss
+41 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-aarch64 747ms (cache miss)
+42 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-aarch64 set size:undefined disposed:false
+43 silly fetch manifest @oven/bun-linux-x64-android@1.3.14
+44 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-android cache-miss
+45 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-darwin-x64-baseline 763ms (cache miss)
+46 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-darwin-x64-baseline set size:undefined disposed:false
+47 silly fetch manifest @oven/bun-freebsd-aarch64@1.3.14
+48 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-freebsd-aarch64 cache-miss
+49 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-x64 777ms (cache miss)
+50 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64 set size:undefined disposed:false
+51 silly fetch manifest @oven/bun-freebsd-x64@1.3.14
+52 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-freebsd-x64 cache-miss
+53 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-x64-musl-baseline 879ms (cache miss)
+54 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-musl-baseline set size:undefined disposed:false
+55 silly fetch manifest @oven/bun-windows-x64@1.3.14
+56 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-windows-x64 cache-miss
+57 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-darwin-aarch64 891ms (cache miss)
+58 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-darwin-aarch64 set size:undefined disposed:false
+59 silly fetch manifest @oven/bun-windows-x64-baseline@1.3.14
+60 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-windows-x64-baseline cache-miss
+61 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-aarch64-musl 907ms (cache miss)
+62 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-aarch64-musl set size:undefined disposed:false
+63 silly fetch manifest @oven/bun-windows-aarch64@1.3.14
+64 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-windows-aarch64 cache-miss
+65 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-darwin-x64 954ms (cache miss)
+66 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-darwin-x64 set size:undefined disposed:false
+67 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-x64-baseline 984ms (cache miss)
+68 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-baseline set size:undefined disposed:false
+69 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-aarch64-android 668ms (cache miss)
+70 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-aarch64-android set size:undefined disposed:false
+71 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-linux-x64-android 628ms (cache miss)
+72 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-linux-x64-android set size:undefined disposed:false
+73 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-freebsd-aarch64 647ms (cache miss)
+74 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-freebsd-aarch64 set size:undefined disposed:false
+75 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-freebsd-x64 680ms (cache miss)
+76 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-freebsd-x64 set size:undefined disposed:false
+77 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-windows-aarch64 661ms (cache miss)
+78 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-windows-aarch64 set size:undefined disposed:false
+79 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-windows-x64 704ms (cache miss)
+80 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-windows-x64 set size:undefined disposed:false
+81 http fetch GET 200 https://registry.npmjs.org/@oven%2fbun-windows-x64-baseline 732ms (cache miss)
+82 silly packumentCache full:https://registry.npmjs.org/@oven%2fbun-windows-x64-baseline set size:undefined disposed:false
+83 silly placeDep ROOT @oven/bun-darwin-aarch64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+84 silly placeDep ROOT @oven/bun-darwin-x64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+85 silly placeDep ROOT @oven/bun-darwin-x64-baseline@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+86 silly placeDep ROOT @oven/bun-freebsd-aarch64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+87 silly placeDep ROOT @oven/bun-freebsd-x64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+88 silly placeDep ROOT @oven/bun-linux-aarch64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+89 silly placeDep ROOT @oven/bun-linux-aarch64-android@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+90 silly placeDep ROOT @oven/bun-linux-aarch64-musl@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+91 silly placeDep ROOT @oven/bun-linux-x64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+92 silly placeDep ROOT @oven/bun-linux-x64-android@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+93 silly placeDep ROOT @oven/bun-linux-x64-baseline@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+94 silly placeDep ROOT @oven/bun-linux-x64-musl@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+95 silly placeDep ROOT @oven/bun-linux-x64-musl-baseline@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+96 silly placeDep ROOT @oven/bun-windows-aarch64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+97 silly placeDep ROOT @oven/bun-windows-x64@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+98 silly placeDep ROOT @oven/bun-windows-x64-baseline@1.3.14 OK for: bun@1.3.14 want: 1.3.14
+99 silly reify moves {}
+100 silly audit bulk request {
+100 silly audit   '@alcalzone/ansi-tokenize': [ '0.3.0' ],
+100 silly audit   '@anthropic-ai/bedrock-sdk': [ '0.29.1' ],
+100 silly audit   '@anthropic-ai/foundry-sdk': [ '0.2.3' ],
+100 silly audit   '@anthropic-ai/sandbox-runtime': [ '0.0.46' ],
+100 silly audit   '@anthropic-ai/sdk': [ '0.94.0' ],
+100 silly audit   '@anthropic-ai/vertex-sdk': [ '0.16.0' ],
+100 silly audit   '@aws-crypto/crc32': [ '5.2.0', '3.0.0' ],
+100 silly audit   '@aws-crypto/util': [ '5.2.0', '4.0.0', '3.0.0' ],
+100 silly audit   tslib: [ '2.8.1', '1.14.1' ],
+100 silly audit   '@aws-crypto/sha256-browser': [ '5.2.0' ],
+100 silly audit   '@aws-crypto/sha256-js': [ '5.2.0', '4.0.0' ],
+100 silly audit   '@aws-crypto/supports-web-crypto': [ '5.2.0' ],
+100 silly audit   '@aws-sdk/client-bedrock-runtime': [ '3.1068.0' ],
+100 silly audit   '@smithy/types': [ '4.14.4', '3.7.2', '2.12.0' ],
+100 silly audit   '@aws-sdk/client-cognito-identity': [ '3.1068.0' ],
+100 silly audit   '@aws-sdk/core': [ '3.974.20' ],
+100 silly audit   '@smithy/signature-v4': [ '5.4.7', '3.1.2' ],
+100 silly audit   '@aws-sdk/credential-provider-cognito-identity': [ '3.972.45' ],
+100 silly audit   '@aws-sdk/credential-provider-env': [ '3.972.46' ],
+100 silly audit   '@aws-sdk/credential-provider-http': [ '3.972.48' ],
+100 silly audit   '@aws-sdk/credential-provider-ini': [ '3.972.53' ],
+100 silly audit   '@aws-sdk/credential-provider-login': [ '3.972.52' ],
+100 silly audit   '@aws-sdk/credential-provider-node': [ '3.972.55' ],
+100 silly audit   '@aws-sdk/credential-provider-process': [ '3.972.46' ],
+100 silly audit   '@aws-sdk/credential-provider-sso': [ '3.972.52' ],
+100 silly audit   '@aws-sdk/token-providers': [ '3.1066.0', '3.1068.0' ],
+100 silly audit   '@aws-sdk/credential-provider-web-identity': [ '3.972.52' ],
+100 silly audit   '@aws-sdk/credential-providers': [ '3.1068.0' ],
+100 silly audit   '@aws-sdk/eventstream-handler-node': [ '3.972.21' ],
+100 silly audit   '@aws-sdk/middleware-eventstream': [ '3.972.17' ],
+100 silly audit   '@aws-sdk/middleware-websocket': [ '3.972.28' ],
+100 silly audit   '@aws-sdk/nested-clients': [ '3.997.20' ],
+100 silly audit   '@aws-sdk/signature-v4-multi-region': [ '3.996.34' ],
+100 silly audit   '@aws-sdk/types': [ '3.973.12' ],
+100 silly audit   '@aws-sdk/util-locate-window': [ '3.965.7' ],
+100 silly audit   '@aws-sdk/util-utf8-browser': [ '3.259.0' ],
+100 silly audit   '@aws-sdk/xml-builder': [ '3.972.29' ],
+100 silly audit   '@aws/lambda-invoke-store': [ '0.2.4' ],
+100 silly audit   '@babel/runtime': [ '7.29.7' ],
+100 silly audit   '@commander-js/extra-typings': [ '12.1.0' ],
+100 silly audit   '@emnapi/runtime': [ '1.11.1' ],
+100 silly audit   '@esbuild/aix-ppc64': [ '0.28.1' ],
+100 silly audit   '@esbuild/android-arm': [ '0.28.1' ],
+100 silly audit   '@esbuild/android-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/android-x64': [ '0.28.1' ],
+100 silly audit   '@esbuild/darwin-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/darwin-x64': [ '0.28.1' ],
+100 silly audit   '@esbuild/freebsd-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/freebsd-x64': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-arm': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-ia32': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-loong64': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-mips64el': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-ppc64': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-riscv64': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-s390x': [ '0.28.1' ],
+100 silly audit   '@esbuild/linux-x64': [ '0.28.1' ],
+100 silly audit   '@esbuild/netbsd-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/netbsd-x64': [ '0.28.1' ],
+100 silly audit   '@esbuild/openbsd-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/openbsd-x64': [ '0.28.1' ],
+100 silly audit   '@esbuild/openharmony-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/sunos-x64': [ '0.28.1' ],
+100 silly audit   '@esbuild/win32-arm64': [ '0.28.1' ],
+100 silly audit   '@esbuild/win32-ia32': [ '0.28.1' ],
+100 silly audit   '@esbuild/win32-x64': [ '0.28.1' ],
+100 silly audit   '@grpc/grpc-js': [ '1.14.4' ],
+100 silly audit   '@grpc/proto-loader': [ '0.8.1' ],
+100 silly audit   '@hono/node-server': [ '1.19.14' ],
+100 silly audit   '@img/colour': [ '1.1.0' ],
+100 silly audit   '@img/sharp-darwin-arm64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-darwin-x64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-libvips-darwin-arm64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-darwin-x64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linux-arm': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linux-arm64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linux-ppc64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linux-riscv64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linux-s390x': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linux-x64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linuxmusl-arm64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-libvips-linuxmusl-x64': [ '1.2.4' ],
+100 silly audit   '@img/sharp-linux-arm': [ '0.34.5' ],
+100 silly audit   '@img/sharp-linux-arm64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-linux-ppc64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-linux-riscv64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-linux-s390x': [ '0.34.5' ],
+100 silly audit   '@img/sharp-linux-x64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-linuxmusl-arm64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-linuxmusl-x64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-wasm32': [ '0.34.5' ],
+100 silly audit   '@img/sharp-win32-arm64': [ '0.34.5' ],
+100 silly audit   '@img/sharp-win32-ia32': [ '0.34.5' ],
+100 silly audit   '@img/sharp-win32-x64': [ '0.34.5' ],
+100 silly audit   '@js-sdsl/ordered-map': [ '4.4.2' ],
+100 silly audit   '@mixmark-io/domino': [ '2.2.0' ],
+100 silly audit   '@modelcontextprotocol/sdk': [ '1.29.0' ],
+100 silly audit   '@msgpack/msgpack': [ '3.1.3' ],
+100 silly audit   '@nodable/entities': [ '2.2.0' ],
+100 silly audit   '@orama/orama': [ '3.1.18' ],
+100 silly audit   '@orama/plugin-data-persistence': [ '3.1.18' ],
+100 silly audit   '@pondwader/socks5-server': [ '1.0.10' ],
+100 silly audit   '@protobufjs/aspromise': [ '1.1.2' ],
+100 silly audit   '@protobufjs/base64': [ '1.1.2' ],
+100 silly audit   '@protobufjs/codegen': [ '2.0.5' ],
+100 silly audit   '@protobufjs/eventemitter': [ '1.1.1' ],
+100 silly audit   '@protobufjs/fetch': [ '1.1.1' ],
+100 silly audit   '@protobufjs/float': [ '1.0.2' ],
+100 silly audit   '@protobufjs/path': [ '1.1.2' ],
+100 silly audit   '@protobufjs/pool': [ '1.1.0' ],
+100 silly audit   '@protobufjs/utf8': [ '1.1.1' ],
+100 silly audit   '@sec-ant/readable-stream': [ '0.4.1' ],
+100 silly audit   '@sindresorhus/merge-streams': [ '4.0.0' ],
+100 silly audit   '@smithy/abort-controller': [ '2.2.0' ],
+100 silly audit   '@smithy/core': [ '3.24.7' ],
+100 silly audit   '@smithy/credential-provider-imds': [ '4.3.9' ],
+100 silly audit   '@smithy/eventstream-codec': [ '2.2.0' ],
+100 silly audit   '@smithy/eventstream-serde-node': [ '2.2.0' ],
+100 silly audit   '@smithy/eventstream-serde-universal': [ '2.2.0' ],
+100 silly audit   '@smithy/fetch-http-handler': [ '5.4.7', '2.5.0' ],
+100 silly audit   '@smithy/is-array-buffer': [ '3.0.0', '2.2.0' ],
+100 silly audit   '@smithy/middleware-endpoint': [ '2.5.1' ],
+100 silly audit   '@smithy/util-middleware': [ '2.2.0', '3.0.11' ],
+100 silly audit   '@smithy/middleware-serde': [ '2.3.0' ],
+100 silly audit   '@smithy/middleware-stack': [ '2.2.0' ],
+100 silly audit   '@smithy/node-config-provider': [ '2.3.0' ],
+100 silly audit   '@smithy/node-http-handler': [ '4.7.8', '2.5.0' ],
+100 silly audit   '@smithy/property-provider': [ '2.2.0' ],
+100 silly audit   '@smithy/protocol-http': [ '3.3.0' ],
+100 silly audit   '@smithy/querystring-builder': [ '2.2.0' ],
+100 silly audit   '@smithy/util-uri-escape': [ '2.2.0', '3.0.0' ],
+100 silly audit   '@smithy/querystring-parser': [ '2.2.0' ],
+100 silly audit   '@smithy/shared-ini-file-loader': [ '2.4.0' ],
+100 silly audit   '@smithy/util-buffer-from': [ '3.0.0', '2.2.0' ],
+100 silly audit   '@smithy/util-hex-encoding': [ '3.0.0', '2.2.0' ],
+100 silly audit   '@smithy/util-utf8': [ '3.0.0', '2.3.0' ],
+100 silly audit   '@smithy/smithy-client': [ '2.5.1' ],
+100 silly audit   '@smithy/url-parser': [ '2.2.0' ],
+100 silly audit   '@smithy/util-base64': [ '2.3.0' ],
+100 silly audit   '@smithy/util-stream': [ '2.2.0' ],
+100 silly audit   '@types/bun': [ '1.3.11' ],
+100 silly audit   '@types/lodash': [ '4.17.24' ],
+100 silly audit   '@types/lodash-es': [ '4.17.12' ],
+100 silly audit   '@types/node': [ '25.5.0' ],
+100 silly audit   '@types/react': [ '19.2.14' ],
+100 silly audit   '@vscode/ripgrep': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-darwin-arm64': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-darwin-x64': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-linux-arm': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-linux-arm64': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-linux-ia32': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-linux-ppc64': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-linux-riscv64': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-linux-s390x': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-linux-x64': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-win32-arm64': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-win32-ia32': [ '1.18.0' ],
+100 silly audit   '@vscode/ripgrep-win32-x64': [ '1.18.0' ],
+100 silly audit   accepts: [ '2.0.0' ],
+100 silly audit   'agent-base': [ '7.1.4' ],
+100 silly audit   ajv: [ '8.18.0' ],
+100 silly audit   'ajv-formats': [ '3.0.1' ],
+100 silly audit   'ansi-regex': [ '6.2.2', '5.0.1' ],
+100 silly audit   'ansi-styles': [ '6.2.3', '4.3.0' ],
+100 silly audit   'any-promise': [ '1.3.0' ],
+100 silly audit   anynum: [ '1.0.0' ],
+100 silly audit   asynckit: [ '0.4.0' ],
+100 silly audit   'auto-bind': [ '5.0.1' ],
+100 silly audit   axios: [ '1.16.0' ],
+100 silly audit   'base64-js': [ '1.5.1' ],
+100 silly audit   'bidi-js': [ '1.0.3' ],
+100 silly audit   'bignumber.js': [ '9.3.1' ],
+100 silly audit   'body-parser': [ '2.2.2' ],
+100 silly audit   bowser: [ '2.14.1' ],
+100 silly audit   'buffer-equal-constant-time': [ '1.0.1' ],
+100 silly audit   'bun-types': [ '1.3.11' ],
+100 silly audit   bytes: [ '3.1.2' ],
+100 silly audit   'call-bind-apply-helpers': [ '1.0.2' ],
+100 silly audit   'call-bound': [ '1.0.4' ],
+100 silly audit   camelcase: [ '5.3.1' ],
+100 silly audit   chalk: [ '5.6.2', '4.1.2' ],
+100 silly audit   chokidar: [ '4.0.3' ],
+100 silly audit   'cli-boxes': [ '3.0.0' ],
+100 silly audit   'cli-highlight': [ '2.1.11' ],
+100 silly audit   cliui: [ '7.0.4', '8.0.1', '6.0.0' ],
+100 silly audit   'emoji-regex': [ '8.0.0', '10.6.0' ],
+100 silly audit   'is-fullwidth-code-point': [ '3.0.0', '5.1.0' ],
+100 silly audit   'string-width': [ '4.2.3', '7.2.0' ],
+100 silly audit   'strip-ansi': [ '6.0.1', '7.2.0' ],
+100 silly audit   'wrap-ansi': [ '7.0.0', '6.2.0', '9.0.2' ],
+100 silly audit   yargs: [ '16.2.0', '15.4.1', '17.7.2' ],
+100 silly audit   'yargs-parser': [ '20.2.9', '18.1.3', '21.1.1' ],
+100 silly audit   'code-excerpt': [ '4.0.0' ],
+100 silly audit   'color-convert': [ '2.0.1' ],
+100 silly audit   'color-name': [ '1.1.4' ],
+100 silly audit   'combined-stream': [ '1.0.8' ],
+100 silly audit   commander: [ '12.1.0', '2.20.3' ],
+100 silly audit   'content-disposition': [ '1.1.0' ],
+100 silly audit   'content-type': [ '1.0.5', '2.0.0' ],
+100 silly audit   'convert-to-spaces': [ '2.0.1' ],
+100 silly audit   cookie: [ '0.7.2' ],
+100 silly audit   'cookie-signature': [ '1.2.2' ],
+100 silly audit   cors: [ '2.8.6' ],
+100 silly audit   'cross-spawn': [ '7.0.6' ],
+100 silly audit   cssfilter: [ '0.0.10' ],
+100 silly audit   csstype: [ '3.2.3' ],
+100 silly audit   debug: [ '4.4.3' ],
+100 silly audit   decamelize: [ '1.2.0' ],
+100 silly audit   'delayed-stream': [ '1.0.0' ],
+100 silly audit   depd: [ '2.0.0' ],
+100 silly audit   'detect-libc': [ '2.1.2' ],
+100 silly audit   diff: [ '8.0.3' ],
+100 silly audit   dijkstrajs: [ '1.0.3' ],
+100 silly audit   dpack: [ '0.6.22' ],
+100 silly audit   'duck-duck-scrape': [ '2.2.7' ],
+100 silly audit   'dunder-proto': [ '1.0.1' ],
+100 silly audit   'ecdsa-sig-formatter': [ '1.0.11' ],
+100 silly audit   'ee-first': [ '1.1.1' ],
+100 silly audit   encodeurl: [ '2.0.0' ],
+100 silly audit   'env-paths': [ '3.0.0' ],
+100 silly audit   'es-define-property': [ '1.0.1' ],
+100 silly audit   'es-errors': [ '1.3.0' ],
+100 silly audit   'es-object-atoms': [ '1.1.2' ],
+100 silly audit   'es-set-tostringtag': [ '2.1.0' ],
+100 silly audit   esbuild: [ '0.28.1' ],
+100 silly audit   escalade: [ '3.2.0' ],
+100 silly audit   'escape-html': [ '1.0.3' ],
+100 silly audit   'escape-string-regexp': [ '2.0.0' ],
+100 silly audit   etag: [ '1.8.1' ],
+100 silly audit   eventsource: [ '3.0.7' ],
+100 silly audit   'eventsource-parser': [ '3.1.0' ],
+100 silly audit   execa: [ '9.6.1' ],
+100 silly audit   express: [ '5.2.1' ],
+100 silly audit   'express-rate-limit': [ '8.5.2' ],
+100 silly audit   extend: [ '3.0.2' ],
+100 silly audit   'fast-deep-equal': [ '3.1.3' ],
+100 silly audit   'fast-uri': [ '3.1.2' ],
+100 silly audit   'fast-xml-builder': [ '1.2.0' ],
+100 silly audit   'fast-xml-parser': [ '5.7.3' ],
+100 silly audit   fflate: [ '0.8.2' ],
+100 silly audit   figures: [ '6.1.0' ],
+100 silly audit   finalhandler: [ '2.1.1' ],
+100 silly audit   'find-up': [ '4.1.0' ],
+100 silly audit   'follow-redirects': [ '1.16.0' ],
+100 silly audit   'form-data': [ '4.0.6' ],
+100 silly audit   'mime-db': [ '1.52.0', '1.54.0' ],
+100 silly audit   'mime-types': [ '2.1.35', '3.0.2' ],
+100 silly audit   forwarded: [ '0.2.0' ],
+100 silly audit   fresh: [ '2.0.0' ],
+100 silly audit   fsevents: [ '2.3.3' ],
+100 silly audit   'function-bind': [ '1.1.2' ],
+100 silly audit   'fuse.js': [ '7.1.0' ],
+100 silly audit   gaxios: [ '6.7.1' ],
+100 silly audit   'is-stream': [ '2.0.1', '4.0.1' ],
+100 silly audit   'gcp-metadata': [ '6.1.1' ],
+100 silly audit   'get-caller-file': [ '2.0.5' ],
+100 silly audit   'get-east-asian-width': [ '1.5.0' ],
+100 silly audit   'get-intrinsic': [ '1.3.0' ],
+100 silly audit   'get-proto': [ '1.0.1' ],
+100 silly audit   'get-stream': [ '9.0.1' ],
+100 silly audit   'google-auth-library': [ '9.15.1' ],
+100 silly audit   'google-logging-utils': [ '0.0.2' ],
+100 silly audit   gopd: [ '1.2.0' ],
+100 silly audit   'graceful-fs': [ '4.2.11' ],
+100 silly audit   gtoken: [ '7.1.0' ],
+100 silly audit   'has-flag': [ '4.0.0' ],
+100 silly audit   'has-symbols': [ '1.1.0' ],
+100 silly audit   'has-tostringtag': [ '1.0.2' ],
+100 silly audit   hasown: [ '2.0.4' ],
+100 silly audit   'highlight.js': [ '10.7.3' ],
+100 silly audit   hono: [ '4.12.25' ],
+100 silly audit   'html-entities': [ '2.6.0' ],
+100 silly audit   'http-errors': [ '2.0.1' ],
+100 silly audit   'https-proxy-agent': [ '7.0.6' ],
+100 silly audit   'human-signals': [ '8.0.1' ],
+100 silly audit   'iconv-lite': [ '0.7.2', '0.6.3' ],
+100 silly audit   ignore: [ '7.0.5' ],
+100 silly audit   'indent-string': [ '5.0.0' ],
+100 silly audit   inherits: [ '2.0.4' ],
+100 silly audit   'ip-address': [ '10.2.0' ],
+100 silly audit   'ipaddr.js': [ '1.9.1' ],
+100 silly audit   'is-plain-obj': [ '4.1.0' ],
+100 silly audit   'is-promise': [ '4.0.0' ],
+100 silly audit   'is-unicode-supported': [ '2.1.0' ],
+100 silly audit   isexe: [ '2.0.0' ],
+100 silly audit   jose: [ '6.2.3' ],
+100 silly audit   'json-bigint': [ '1.0.0' ],
+100 silly audit   'json-schema-to-ts': [ '3.1.1' ],
+100 silly audit   'json-schema-traverse': [ '1.0.0' ],
+100 silly audit   'json-schema-typed': [ '8.0.2' ],
+100 silly audit   'jsonc-parser': [ '3.3.1' ],
+100 silly audit   jwa: [ '2.0.1' ],
+100 silly audit   jws: [ '4.0.1' ],
+100 silly audit   'locate-path': [ '5.0.0' ],
+100 silly audit   'lodash-es': [ '4.18.1' ],
+100 silly audit   'lodash.camelcase': [ '4.3.0' ],
+100 silly audit   'lodash.debounce': [ '4.0.8' ],
+100 silly audit   long: [ '5.3.2' ],
+100 silly audit   'lru-cache': [ '11.2.7' ],
+100 silly audit   marked: [ '15.0.12' ],
+100 silly audit   'math-intrinsics': [ '1.1.0' ],
+100 silly audit   'media-typer': [ '1.1.0' ],
+100 silly audit   'merge-descriptors': [ '2.0.0' ],
+100 silly audit   ms: [ '2.1.3' ],
+100 silly audit   mz: [ '2.7.0' ],
+100 silly audit   needle: [ '3.5.0' ],
+100 silly audit   negotiator: [ '1.0.0' ],
+100 silly audit   'node-fetch': [ '2.7.0' ],
+100 silly audit   'npm-run-path': [ '6.0.0' ],
+100 silly audit   'path-key': [ '4.0.0', '3.1.1' ],
+100 silly audit   'object-assign': [ '4.1.1' ],
+100 silly audit   'object-inspect': [ '1.13.4' ],
+100 silly audit   'on-finished': [ '2.4.1' ],
+100 silly audit   once: [ '1.4.0' ],
+100 silly audit   'p-limit': [ '2.3.0' ],
+100 silly audit   'p-locate': [ '4.1.0' ],
+100 silly audit   'p-map': [ '7.0.4' ],
+100 silly audit   'p-try': [ '2.2.0' ],
+100 silly audit   'parse-ms': [ '4.0.0' ],
+100 silly audit   parse5: [ '5.1.1', '6.0.1' ],
+100 silly audit   'parse5-htmlparser2-tree-adapter': [ '6.0.1' ],
+100 silly audit   parseurl: [ '1.3.3' ],
+100 silly audit   'path-exists': [ '4.0.0' ],
+100 silly audit   'path-expression-matcher': [ '1.5.0' ],
+100 silly audit   'path-to-regexp': [ '8.4.2' ],
+100 silly audit   picomatch: [ '4.0.4' ],
+100 silly audit   'pkce-challenge': [ '5.0.1' ],
+100 silly audit   pngjs: [ '5.0.0' ],
+100 silly audit   'pretty-ms': [ '9.3.0' ],
+100 silly audit   'proper-lockfile': [ '4.1.2' ],
+100 silly audit   'signal-exit': [ '3.0.7', '4.1.0' ],
+100 silly audit   protobufjs: [ '7.6.4' ],
+100 silly audit   'proxy-addr': [ '2.0.7' ],
+100 silly audit   'proxy-from-env': [ '2.1.0' ],
+100 silly audit   qrcode: [ '1.5.4' ],
+100 silly audit   y18n: [ '4.0.3', '5.0.8' ],
+100 silly audit   qs: [ '6.15.2' ],
+100 silly audit   'range-parser': [ '1.2.1' ],
+100 silly audit   'raw-body': [ '3.0.2' ],
+100 silly audit   react: [ '19.2.4' ],
+100 silly audit   'react-compiler-runtime': [ '1.0.0' ],
+100 silly audit   'react-reconciler': [ '0.33.0' ],
+100 silly audit   readdirp: [ '4.1.2' ],
+100 silly audit   'require-directory': [ '2.1.1' ],
+100 silly audit   'require-from-string': [ '2.0.2' ],
+100 silly audit   'require-main-filename': [ '2.0.0' ],
+100 silly audit   retry: [ '0.12.0' ],
+100 silly audit   router: [ '2.2.0' ],
+100 silly audit   'safe-buffer': [ '5.2.1' ],
+100 silly audit   'safer-buffer': [ '2.1.2' ],
+100 silly audit   sax: [ '1.6.0' ],
+100 silly audit   scheduler: [ '0.27.0' ],
+100 silly audit   semver: [ '7.7.4' ],
+100 silly audit   send: [ '1.2.1' ],
+100 silly audit   seqproto: [ '0.2.3' ],
+100 silly audit   'serve-static': [ '2.2.1' ],
+100 silly audit   'set-blocking': [ '2.0.0' ],
+100 silly audit   setprototypeof: [ '1.2.0' ],
+100 silly audit   sharp: [ '0.34.5' ],
+100 silly audit   'shebang-command': [ '2.0.0' ],
+100 silly audit   'shebang-regex': [ '3.0.0' ],
+100 silly audit   'shell-quote': [ '1.8.3' ],
+100 silly audit   'side-channel': [ '1.1.1' ],
+100 silly audit   'side-channel-list': [ '1.0.1' ],
+100 silly audit   'side-channel-map': [ '1.0.1' ],
+100 silly audit   'side-channel-weakmap': [ '1.0.2' ],
+100 silly audit   'stack-utils': [ '2.0.6' ],
+100 silly audit   statuses: [ '2.0.2' ],
+100 silly audit   'strip-final-newline': [ '4.0.0' ],
+100 silly audit   strnum: [ '2.4.0' ],
+100 silly audit   'supports-color': [ '7.2.0' ],
+100 silly audit   'supports-hyperlinks': [ '3.2.0' ],
+100 silly audit   thenify: [ '3.3.1' ],
+100 silly audit   'thenify-all': [ '1.6.0' ],
+100 silly audit   toidentifier: [ '1.0.1' ],
+100 silly audit   tr46: [ '0.0.3' ],
+100 silly audit   'tree-kill': [ '1.2.2' ],
+100 silly audit   'ts-algebra': [ '2.0.0' ],
+100 silly audit   tsx: [ '4.22.4' ],
+100 silly audit   turndown: [ '7.2.2' ],
+100 silly audit   'type-fest': [ '4.41.0' ],
+100 silly audit   'type-is': [ '2.1.0' ],
+100 silly audit   typescript: [ '5.9.3' ],
+100 silly audit   undici: [ '7.24.6' ],
+100 silly audit   'undici-types': [ '7.18.2' ],
+100 silly audit   'unicorn-magic': [ '0.3.0' ],
+100 silly audit   unpipe: [ '1.0.0' ],
+100 silly audit   'usehooks-ts': [ '3.1.1' ],
+100 silly audit   uuid: [ '9.0.1' ],
+100 silly audit   vary: [ '1.1.2' ],
+100 silly audit   'vscode-jsonrpc': [ '8.2.0' ],
+100 silly audit   'vscode-languageserver-protocol': [ '3.17.5' ],
+100 silly audit   'vscode-languageserver-types': [ '3.17.5' ],
+100 silly audit   'webidl-conversions': [ '3.0.1' ],
+100 silly audit   'whatwg-url': [ '5.0.0' ],
+100 silly audit   which: [ '2.0.2' ],
+100 silly audit   'which-module': [ '2.0.1' ],
+100 silly audit   wrappy: [ '1.0.2' ],
+100 silly audit   ws: [ '8.20.0' ],
+100 silly audit   'xml-naming': [ '0.1.0' ],
+100 silly audit   xss: [ '1.0.15' ],
+100 silly audit   yaml: [ '2.8.3' ],
+100 silly audit   yoctocolors: [ '2.1.2' ],
+100 silly audit   zod: [ '3.25.76' ],
+100 silly audit   'zod-to-json-schema': [ '3.25.2' ],
+100 silly audit   bun: [ '1.3.14' ],
+100 silly audit   '@oven/bun-darwin-aarch64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-darwin-x64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-darwin-x64-baseline': [ '1.3.14' ],
+100 silly audit   '@oven/bun-freebsd-aarch64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-freebsd-x64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-aarch64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-aarch64-android': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-aarch64-musl': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-x64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-x64-android': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-x64-baseline': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-x64-musl': [ '1.3.14' ],
+100 silly audit   '@oven/bun-linux-x64-musl-baseline': [ '1.3.14' ],
+100 silly audit   '@oven/bun-windows-aarch64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-windows-x64': [ '1.3.14' ],
+100 silly audit   '@oven/bun-windows-x64-baseline': [ '1.3.14' ]
+100 silly audit }
+101 http cache fsevents@https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz 0ms (cache hit)
+102 http cache bun@https://registry.npmjs.org/bun/-/bun-1.3.14.tgz 0ms (cache hit)
+103 http cache @oven/bun-darwin-aarch64@https://registry.npmjs.org/@oven/bun-darwin-aarch64/-/bun-darwin-aarch64-1.3.14.tgz 0ms (cache hit)
+104 silly tarball no local data for bun@https://registry.npmjs.org/bun/-/bun-1.3.14.tgz. Extracting by manifest.
+105 silly tarball no local data for @oven/bun-darwin-aarch64@https://registry.npmjs.org/@oven/bun-darwin-aarch64/-/bun-darwin-aarch64-1.3.14.tgz. Extracting by manifest.
+106 http fetch GET 200 https://registry.npmjs.org/bun/-/bun-1.3.14.tgz 54ms (cache miss)
+107 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 295ms
+108 silly audit report {
+108 silly audit report   'shell-quote': [
+108 silly audit report     {
+108 silly audit report       id: 1120422,
+108 silly audit report       url: 'https://github.com/advisories/GHSA-w7jw-789q-3m8p',
+108 silly audit report       title: 'shell-quote quote() does not escape newlines in object .op values',
+108 silly audit report       severity: 'critical',
+108 silly audit report       vulnerable_versions: '>=1.1.0 <=1.8.3',
+108 silly audit report       cwe: [Array],
+108 silly audit report       cvss: [Object]
+108 silly audit report     }
+108 silly audit report   ],
+108 silly audit report   uuid: [
+108 silly audit report     {
+108 silly audit report       id: 1119441,
+108 silly audit report       url: 'https://github.com/advisories/GHSA-w5hq-g745-h8pq',
+108 silly audit report       title: 'uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided',
+108 silly audit report       severity: 'moderate',
+108 silly audit report       vulnerable_versions: '<11.1.1',
+108 silly audit report       cwe: [Array],
+108 silly audit report       cvss: [Object]
+108 silly audit report     }
+108 silly audit report   ],
+108 silly audit report   ws: [
+108 silly audit report     {
+108 silly audit report       id: 1119108,
+108 silly audit report       url: 'https://github.com/advisories/GHSA-58qx-3vcg-4xpx',
+108 silly audit report       title: 'ws: Uninitialized memory disclosure',
+108 silly audit report       severity: 'moderate',
+108 silly audit report       vulnerable_versions: '>=8.0.0 <8.20.1',
+108 silly audit report       cwe: [Array],
+108 silly audit report       cvss: [Object]
+108 silly audit report     }
+108 silly audit report   ]
+108 silly audit report }
+109 silly packumentCache corgi:https://registry.npmjs.org/shell-quote cache-miss
+110 silly packumentCache corgi:https://registry.npmjs.org/uuid cache-miss
+111 silly packumentCache corgi:https://registry.npmjs.org/ws cache-miss
+112 http cache https://registry.npmjs.org/uuid 16ms (cache hit)
+113 silly packumentCache corgi:https://registry.npmjs.org/uuid set size:81812 disposed:false
+114 http cache https://registry.npmjs.org/shell-quote 18ms (cache hit)
+115 silly packumentCache corgi:https://registry.npmjs.org/shell-quote set size:27390 disposed:false
+116 http cache https://registry.npmjs.org/ws 18ms (cache hit)
+117 silly packumentCache corgi:https://registry.npmjs.org/ws set size:199711 disposed:false
+118 silly packumentCache corgi:https://registry.npmjs.org/@anthropic-ai%2fsandbox-runtime cache-miss
+119 http cache https://registry.npmjs.org/@anthropic-ai%2fsandbox-runtime 2ms (cache hit)
+120 silly packumentCache corgi:https://registry.npmjs.org/@anthropic-ai%2fsandbox-runtime set size:63851 disposed:false
+121 silly packumentCache corgi:https://registry.npmjs.org/gaxios cache-miss
+122 http cache https://registry.npmjs.org/gaxios 1ms (cache hit)
+123 silly packumentCache corgi:https://registry.npmjs.org/gaxios set size:197686 disposed:false
+124 silly packumentCache corgi:https://registry.npmjs.org/gcp-metadata cache-miss
+125 silly packumentCache corgi:https://registry.npmjs.org/google-auth-library cache-miss
+126 silly packumentCache corgi:https://registry.npmjs.org/gtoken cache-miss
+127 http cache https://registry.npmjs.org/gcp-metadata 3ms (cache hit)
+128 silly packumentCache corgi:https://registry.npmjs.org/gcp-metadata set size:88264 disposed:false
+129 http cache https://registry.npmjs.org/gtoken 4ms (cache hit)
+130 silly packumentCache corgi:https://registry.npmjs.org/gtoken set size:74319 disposed:false
+131 http cache https://registry.npmjs.org/google-auth-library 5ms (cache hit)
+132 silly packumentCache corgi:https://registry.npmjs.org/google-auth-library set size:368742 disposed:false
+133 http fetch GET 200 https://registry.npmjs.org/@oven/bun-darwin-aarch64/-/bun-darwin-aarch64-1.3.14.tgz 4609ms (cache miss)
+134 info run bun@1.3.14 postinstall node_modules/bun node install.js
+135 info run bun@1.3.14 postinstall { code: 0, signal: null }
+136 silly ADD node_modules/@oven/bun-darwin-aarch64
+137 silly ADD node_modules/bun
+138 silly ADD node_modules/fsevents
+139 verbose cwd /Users/kakihimavarasagar/Downloads/codesage
+140 verbose os Darwin 27.0.0
+141 verbose node v25.2.1
+142 verbose npm  v11.6.2
+143 verbose exit 0
+144 info ok

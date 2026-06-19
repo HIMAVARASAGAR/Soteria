@@ -1,0 +1,688 @@
+import Fuse from 'fuse.js'
+import {
+  type Command,
+  formatDescriptionWithSource,
+  getCommand,
+  getCommandName,
+} from '../../commands.js'
+import type { SuggestionItem } from '../../components/PromptInput/PromptInputFooterSuggestions.js'
+import { getSkillUsageScore } from './skillUsageTracking.js'
+
+// Treat these characters as word separators for command search
+const SEPARATORS = /[:_-]/g
+
+type CommandSearchItem = {
+  descriptionKey: string[]
+  partKey: string[] | undefined
+  commandName: string
+  command: Command
+  aliasKey: string[] | undefined
+}
+
+type CommandSearchSnapshot = {
+  aliases: string[] | undefined
+  command: Command
+  commandName: string
+  isHidden: boolean
+  renderedDescription: string
+}
+
+// Cache the Fuse index keyed by the commands array identity plus a signature
+// of the searchable UI text. The commands array is stable (memoized in
+// REPL.tsx), while language changes can alter rendered descriptions in place.
+let fuseCache: {
+  commands: Command[]
+  signature: string
+  fuse: Fuse<CommandSearchItem>
+} | null = null
+
+function getCommandFuse(commands: Command[]): Fuse<CommandSearchItem> {
+  const snapshots = getCommandSearchSnapshots(commands)
+  const signature = getCommandSearchSignature(snapshots)
+
+  if (
+    fuseCache?.commands === commands &&
+    fuseCache.signature === signature
+  ) {
+    return fuseCache.fuse
+  }
+
+  const commandData: CommandSearchItem[] = snapshots
+    .filter(snapshot => !snapshot.isHidden)
+    .map(snapshot => {
+      const { aliases, command, commandName, renderedDescription } = snapshot
+
+      return {
+        descriptionKey: renderedDescription
+          .split(/\s+/)
+          .map(word => cleanWord(word))
+          .filter(Boolean),
+        partKey: undefined,
+        commandName,
+        command,
+        aliasKey: aliases,
+      }
+    })
+
+  const fuse = new Fuse(commandData, {
+    includeScore: true,
+    includeMatches: true,
+    threshold: 0.4,
+    location: 0, // prefer matches at the beginning of strings
+    distance: 100, // increased to allow matching in descriptions
+    keys: [
+      {
+        name: 'commandName',
+        weight: 3, // Highest priority for command names
+      },
+      {
+        name: 'aliasKey',
+        weight: 2, // Same high priority for aliases
+      },
+      {
+        name: 'descriptionKey',
+        weight: 0.5, // Lower priority for descriptions
+      },
+    ],
+  })
+
+  fuseCache = { commands, signature, fuse }
+  return fuse
+}
+
+function getCommandSearchSnapshots(
+  commands: Command[],
+): CommandSearchSnapshot[] {
+  return commands.map(command => ({
+    aliases: command.aliases,
+    command,
+    commandName: getCommandName(command),
+    isHidden: Boolean(command.isHidden),
+    renderedDescription: getRenderedCommandDescription(command),
+  }))
+}
+
+function getCommandSearchSignature(
+  snapshots: CommandSearchSnapshot[],
+): string {
+  return JSON.stringify(
+    snapshots.map(snapshot => [
+      snapshot.commandName,
+      snapshot.aliases ?? [],
+      snapshot.isHidden,
+      snapshot.renderedDescription,
+    ]),
+  )
+}
+
+/**
+ * Type guard to check if a suggestion's metadata is a Command.
+ * Commands have a name string and a type property.
+ */
+function isCommandMetadata(metadata: unknown): metadata is Command {
+  return (
+    typeof metadata === 'object' &&
+    metadata !== null &&
+    'name' in metadata &&
+    typeof (metadata as { name: unknown }).name === 'string' &&
+    'type' in metadata
+  )
+}
+
+/**
+ * Represents a slash command found mid-input (not at the start)
+ */
+export type MidInputSlashCommand = {
+  token: string // e.g., "/com"
+  startPos: number // Position of "/"
+  partialCommand: string // e.g., "com"
+}
+
+/**
+ * Finds a slash command token that appears mid-input (not at position 0).
+ * A mid-input slash command is a "/" preceded by whitespace, where the cursor
+ * is at or after the "/".
+ *
+ * @param input The full input string
+ * @param cursorOffset The current cursor position
+ * @returns The mid-input slash command info, or null if not found
+ */
+export function findMidInputSlashCommand(
+  input: string,
+  cursorOffset: number,
+): MidInputSlashCommand | null {
+  // If input starts with "/", this is start-of-input case (handled elsewhere)
+  if (input.startsWith('/')) {
+    return null
+  }
+
+  // Look backwards from cursor to find a "/" preceded by whitespace
+  const beforeCursor = input.slice(0, cursorOffset)
+
+  // Find the last "/" in the text before cursor
+  // Pattern: whitespace followed by "/" then optional alphanumeric/dash characters.
+  // Lookbehind (?<=\s) is avoided — it defeats YARR JIT in JSC, and the
+  // interpreter scans O(n) even with the $ anchor. Capture the whitespace
+  // instead and offset match.index by 1.
+  const match = beforeCursor.match(/\s\/([a-zA-Z0-9_:-]*)$/)
+  if (!match || match.index === undefined) {
+    return null
+  }
+
+  // Get the full token (may extend past cursor)
+  const slashPos = match.index + 1
+  const textAfterSlash = input.slice(slashPos + 1)
+
+  // Extract the command portion (until whitespace or end)
+  const commandMatch = textAfterSlash.match(/^[a-zA-Z0-9_:-]*/)
+  const fullCommand = commandMatch ? commandMatch[0] : ''
+
+  // If cursor is past the command (after a space), don't show ghost text
+  if (cursorOffset > slashPos + 1 + fullCommand.length) {
+    return null
+  }
+
+  return {
+    token: '/' + fullCommand,
+    startPos: slashPos,
+    partialCommand: fullCommand,
+  }
+}
+
+/**
+ * Finds the best matching command for a partial command string.
+ * Delegates to generateCommandSuggestions and filters to prefix matches.
+ *
+ * @param partialCommand The partial command typed by the user (without "/")
+ * @param commands Available commands
+ * @returns The completion suffix (e.g., "mit" for partial "com" matching "commit"), or null
+ */
+export function getBestCommandMatch(
+  partialCommand: string,
+  commands: Command[],
+): { suffix: string; fullCommand: string } | null {
+  if (!partialCommand) {
+    return null
+  }
+
+  // Use existing suggestion logic
+  const suggestions = generateCommandSuggestions('/' + partialCommand, commands)
+  if (suggestions.length === 0) {
+    return null
+  }
+
+  // Find first suggestion that is a prefix match (for inline completion)
+  const query = partialCommand.toLowerCase()
+  for (const suggestion of suggestions) {
+    if (!isCommandMetadata(suggestion.metadata)) {
+      continue
+    }
+    const name = getCommandName(suggestion.metadata)
+    if (name.toLowerCase().startsWith(query)) {
+      const suffix = name.slice(partialCommand.length)
+      // Only return if there's something to complete
+      if (suffix) {
+        return { suffix, fullCommand: name }
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Checks if input is a command (starts with slash)
+ */
+export function isCommandInput(input: string): boolean {
+  return input.startsWith('/')
+}
+
+export function getCommandSuggestionForEnter(
+  input: string,
+  suggestion: SuggestionItem | undefined,
+  commands: Command[],
+): string | SuggestionItem | undefined {
+  const exactCommandName = !input.includes(' ') && isCommandInput(input)
+    ? input.slice(1).toLowerCase().trim()
+    : ''
+  const exactCommands = exactCommandName
+    ? commands.filter(cmd => getCommandName(cmd).toLowerCase() === exactCommandName)
+    : []
+
+  return exactCommands.length === 1
+    ? getCommandName(exactCommands[0]!)
+    : suggestion
+}
+
+/**
+ * Checks if a command input has arguments
+ * A command with just a trailing space is considered to have no arguments
+ */
+export function hasCommandArgs(input: string): boolean {
+  if (!isCommandInput(input)) return false
+
+  if (!input.includes(' ')) return false
+
+  if (input.endsWith(' ')) return false
+
+  return true
+}
+
+/**
+ * Formats a command with proper notation
+ */
+export function formatCommand(command: string): string {
+  return `/${command} `
+}
+
+/**
+ * Generates a deterministic unique ID for a command suggestion.
+ * Commands with the same name from different sources get unique IDs.
+ *
+ * Only prompt commands can have duplicates (from user settings, project
+ * settings, plugins, etc). Built-in commands (local, local-jsx) are
+ * defined once in code and can't have duplicates.
+ */
+function getCommandId(cmd: Command): string {
+  const commandName = getCommandName(cmd)
+  if (cmd.type === 'prompt') {
+    // For plugin commands, include the repository to disambiguate
+    if (cmd.source === 'plugin' && cmd.pluginInfo?.repository) {
+      return `${commandName}:${cmd.source}:${cmd.pluginInfo.repository}`
+    }
+    return `${commandName}:${cmd.source}`
+  }
+  // Built-in commands include type as fallback for future-proofing
+  return `${commandName}:${cmd.type}`
+}
+
+/**
+ * Checks if a query matches any of the command's aliases.
+ * Returns the matched alias if found, otherwise undefined.
+ */
+function findMatchedAlias(
+  query: string,
+  aliases?: string[],
+): string | undefined {
+  if (!aliases || aliases.length === 0 || query === '') {
+    return undefined
+  }
+  // Check if query is a substring of any alias (case-insensitive)
+  return aliases.find(alias => alias.toLowerCase().includes(query))
+}
+
+function descriptionMatchesQuery(cmd: Command, query: string): boolean {
+  if (query === '') return false
+
+  const words = getRenderedCommandDescription(cmd)
+    .split(/\s+/)
+    .map(word => cleanWord(word))
+    .filter(Boolean)
+
+  return words.some(word => word.includes(query))
+}
+
+/**
+ * Creates a suggestion item from a command.
+ * Only shows the matched alias in parentheses if the user typed an alias.
+ */
+function createCommandSuggestionItem(
+  cmd: Command,
+  matchedAlias?: string,
+): SuggestionItem {
+  const commandName = getCommandName(cmd)
+  // Only show the alias if the user typed it
+  const aliasText = matchedAlias ? ` (${matchedAlias})` : ''
+
+  const isWorkflow = cmd.type === 'prompt' && cmd.kind === 'workflow'
+  const fullDescription = getRenderedCommandDescription(cmd)
+
+  return {
+    id: getCommandId(cmd),
+    displayText: `/${commandName}${aliasText}`,
+    tag: isWorkflow ? 'workflow' : undefined,
+    description: fullDescription,
+    metadata: cmd,
+  }
+}
+
+function getRenderedCommandDescription(cmd: Command): string {
+  const isWorkflow = cmd.type === 'prompt' && cmd.kind === 'workflow'
+  const description = isWorkflow
+    ? cmd.description
+    : formatDescriptionWithSource(cmd)
+  return (
+    description +
+    (cmd.type === 'prompt' && cmd.argNames?.length
+      ? ` (arguments: ${cmd.argNames.join(', ')})`
+      : '')
+  )
+}
+
+/**
+ * Ensure suggestion IDs are unique for React keys and selection logic.
+ * If duplicates exist, append a stable numeric suffix to subsequent entries.
+ */
+function ensureUniqueSuggestionIds(items: SuggestionItem[]): SuggestionItem[] {
+  const counts = new Map<string, number>()
+  return items.map(item => {
+    const seen = counts.get(item.id) ?? 0
+    counts.set(item.id, seen + 1)
+    if (seen === 0) {
+      return item
+    }
+    return {
+      ...item,
+      id: `${item.id}#${seen + 1}`,
+    }
+  })
+}
+
+/**
+ * Generate command suggestions based on input
+ */
+export function generateCommandSuggestions(
+  input: string,
+  commands: Command[],
+): SuggestionItem[] {
+  // Only process command input
+  if (!isCommandInput(input)) {
+    return []
+  }
+
+  // If there are arguments, don't show suggestions
+  if (hasCommandArgs(input)) {
+    return []
+  }
+
+  const query = input.slice(1).toLowerCase().trim()
+
+  // When just typing '/' without additional text
+  if (query === '') {
+    const visibleCommands = commands.filter(cmd => !cmd.isHidden)
+
+    // Find recently used skills (only prompt commands have usage tracking)
+    const recentlyUsed: Command[] = []
+    const commandsWithScores = visibleCommands
+      .filter(cmd => cmd.type === 'prompt')
+      .map(cmd => ({
+        cmd,
+        score: getSkillUsageScore(getCommandName(cmd)),
+      }))
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+
+    // Take top 5 recently used skills
+    for (const item of commandsWithScores.slice(0, 5)) {
+      recentlyUsed.push(item.cmd)
+    }
+
+    // Create a set of recently used command IDs to avoid duplicates
+    const recentlyUsedIds = new Set(recentlyUsed.map(cmd => getCommandId(cmd)))
+
+    // Categorize remaining commands (excluding recently used)
+    const builtinCommands: Command[] = []
+    const userCommands: Command[] = []
+    const projectCommands: Command[] = []
+    const policyCommands: Command[] = []
+    const otherCommands: Command[] = []
+
+    visibleCommands.forEach(cmd => {
+      // Skip if already in recently used
+      if (recentlyUsedIds.has(getCommandId(cmd))) {
+        return
+      }
+
+      if (cmd.type === 'local' || cmd.type === 'local-jsx') {
+        builtinCommands.push(cmd)
+      } else if (
+        cmd.type === 'prompt' &&
+        (cmd.source === 'userSettings' || cmd.source === 'localSettings')
+      ) {
+        userCommands.push(cmd)
+      } else if (cmd.type === 'prompt' && cmd.source === 'projectSettings') {
+        projectCommands.push(cmd)
+      } else if (cmd.type === 'prompt' && cmd.source === 'policySettings') {
+        policyCommands.push(cmd)
+      } else {
+        otherCommands.push(cmd)
+      }
+    })
+
+    // Sort each category alphabetically
+    const sortAlphabetically = (a: Command, b: Command) =>
+      getCommandName(a).localeCompare(getCommandName(b))
+
+    builtinCommands.sort(sortAlphabetically)
+    userCommands.sort(sortAlphabetically)
+    projectCommands.sort(sortAlphabetically)
+    policyCommands.sort(sortAlphabetically)
+    otherCommands.sort(sortAlphabetically)
+
+    // Combine with built-in commands prioritized after recently used,
+    // so they remain visible even when many skills are installed
+    return ensureUniqueSuggestionIds([
+      ...recentlyUsed,
+      ...builtinCommands,
+      ...userCommands,
+      ...projectCommands,
+      ...policyCommands,
+      ...otherCommands,
+    ].map(cmd => createCommandSuggestionItem(cmd)))
+  }
+
+  // The Fuse index filters hidden commands, so an exact hidden command name
+  // will not appear in Fuse results. If no visible command shares the name,
+  // prepend the hidden exact match so explicit invocation still works.
+  // Prepend rather than early-return so visible prefix siblings (e.g.
+  // /voice-memo) still appear below, and getBestCommandMatch can still find
+  // a non-empty suffix.
+  let hiddenExact = commands.find(
+    cmd => cmd.isHidden && getCommandName(cmd).toLowerCase() === query,
+  )
+  if (
+    hiddenExact &&
+    commands.some(
+      cmd => !cmd.isHidden && getCommandName(cmd).toLowerCase() === query,
+    )
+  ) {
+    hiddenExact = undefined
+  }
+
+  const visibleCommands = commands.filter(cmd => !cmd.isHidden)
+
+  const candidates: Array<{
+    cmd: Command
+    name: string
+    aliases: string[]
+    usage: number
+    rank: number
+    fuseScore?: number
+  }> = []
+
+  // Run Fuse search
+  const fuse = getCommandFuse(commands)
+  const searchResults = fuse.search(query)
+  const fuseMap = new Map<Command, { score: number; matchesName: boolean }>()
+  for (const r of searchResults) {
+    const matchesName = r.matches?.some(m => m.key === 'commandName' || m.key === 'aliasKey') ?? false
+    fuseMap.set(r.item.command, { score: r.score ?? 1, matchesName })
+  }
+
+  for (const cmd of visibleCommands) {
+    const name = getCommandName(cmd).toLowerCase()
+    const aliases = cmd.aliases?.map(alias => alias.toLowerCase()) ?? []
+    const usage = cmd.type === 'prompt' ? getSkillUsageScore(getCommandName(cmd)) : 0
+
+    let rank = 9 // Default no match
+    if (name === query) {
+      rank = 1
+    } else if (aliases.includes(query)) {
+      rank = 2
+    } else if (name.startsWith(query)) {
+      rank = 3
+    } else if (aliases.some(a => a.startsWith(query))) {
+      rank = 4
+    } else if (name.includes(query)) {
+      rank = 5
+    } else if (aliases.some(a => a.includes(query))) {
+      rank = 6
+    } else if (fuseMap.has(cmd)) {
+      const info = fuseMap.get(cmd)!
+      if (info.matchesName) {
+        rank = 7
+      } else if (descriptionMatchesQuery(cmd, query)) {
+        rank = 8
+      }
+    }
+
+    if (rank <= 8) {
+      candidates.push({
+        cmd,
+        name,
+        aliases,
+        usage,
+        rank,
+        fuseScore: fuseMap.get(cmd)?.score,
+      })
+    }
+  }
+
+  // Sort candidates by match rank, then length (for prefix/substring matches), and finally usage/Fuse score.
+  candidates.sort((a, b) => {
+    if (a.rank !== b.rank) {
+      return a.rank - b.rank
+    }
+
+    // Rank 3: Prefix name matches - prefer shorter name (closer to exact)
+    if (a.rank === 3 && a.name.length !== b.name.length) {
+      return a.name.length - b.name.length
+    }
+
+    // Rank 4: Prefix alias matches - prefer shorter matching alias
+    if (a.rank === 4) {
+      const aBestAlias = a.aliases.find(alias => alias.startsWith(query)) ?? ''
+      const bBestAlias = b.aliases.find(alias => alias.startsWith(query)) ?? ''
+      if (aBestAlias.length !== bBestAlias.length) {
+        return aBestAlias.length - bBestAlias.length
+      }
+    }
+
+    // Rank 5: Substring name matches - prefer shorter name (closer to exact)
+    if (a.rank === 5 && a.name.length !== b.name.length) {
+      return a.name.length - b.name.length
+    }
+
+    // Rank 6: Substring alias matches - prefer shorter matching alias
+    if (a.rank === 6) {
+      const aBestAlias = a.aliases.find(alias => alias.includes(query)) ?? ''
+      const bBestAlias = b.aliases.find(alias => alias.includes(query)) ?? ''
+      if (aBestAlias.length !== bBestAlias.length) {
+        return aBestAlias.length - bBestAlias.length
+      }
+    }
+
+    // Rank 7 & 8: Fuzzy matches
+    if (a.rank === 7 || a.rank === 8) {
+      const scoreDiff = (a.fuseScore ?? 0) - (b.fuseScore ?? 0)
+      if (scoreDiff !== 0) {
+        return scoreDiff
+      }
+    }
+
+    // Default tiebreaker: usage score (highest usage first)
+    return b.usage - a.usage
+  })
+
+  // Map search results to suggestion items
+  const fuseSuggestions = candidates.map(c => {
+    const matchedAlias = findMatchedAlias(query, c.cmd.aliases)
+    return createCommandSuggestionItem(c.cmd, matchedAlias)
+  })
+
+  // Skip the prepend defensively if the command is already present; duplicate
+  // ids confuse React keys and selection state.
+  if (hiddenExact) {
+    const hiddenId = getCommandId(hiddenExact)
+    if (!fuseSuggestions.some(s => s.id === hiddenId)) {
+      return ensureUniqueSuggestionIds([
+        createCommandSuggestionItem(hiddenExact),
+        ...fuseSuggestions,
+      ])
+    }
+  }
+  return ensureUniqueSuggestionIds(fuseSuggestions)
+}
+
+/**
+ * Apply selected command to input
+ */
+export function applyCommandSuggestion(
+  suggestion: string | SuggestionItem,
+  shouldExecute: boolean,
+  commands: Command[],
+  onInputChange: (value: string) => void,
+  setCursorOffset: (offset: number) => void,
+  onSubmit: (
+    value: string,
+    isSubmittingSlashCommand?: boolean,
+    slashCommandOverride?: Command,
+  ) => void,
+): void {
+  // Extract command name and object from string or SuggestionItem metadata
+  let commandName: string
+  let commandObj: Command | undefined
+  if (typeof suggestion === 'string') {
+    commandName = suggestion
+    commandObj = shouldExecute ? getCommand(commandName, commands) : undefined
+  } else {
+    if (!isCommandMetadata(suggestion.metadata)) {
+      return // Invalid suggestion, nothing to apply
+    }
+    commandName = getCommandName(suggestion.metadata)
+    commandObj = suggestion.metadata
+  }
+
+  // Format the command input with trailing space
+  const newInput = formatCommand(commandName)
+  onInputChange(newInput)
+  setCursorOffset(newInput.length)
+
+  // Execute command if requested and it takes no arguments
+  if (shouldExecute && commandObj) {
+    if (
+      commandObj.type !== 'prompt' ||
+      (commandObj.argNames ?? []).length === 0
+    ) {
+      onSubmit(newInput, /* isSubmittingSlashCommand */ true, commandObj)
+    }
+  }
+}
+
+// Helper function at bottom of file per CLAUDE.md
+function cleanWord(word: string) {
+  return word.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
+}
+
+/**
+ * Find all /command patterns in text for highlighting.
+ * Returns array of {start, end} positions.
+ * Requires whitespace or start-of-string before the slash to avoid
+ * matching paths like /usr/bin.
+ */
+export function findSlashCommandPositions(
+  text: string,
+): Array<{ start: number; end: number }> {
+  const positions: Array<{ start: number; end: number }> = []
+  // Match /command patterns preceded by whitespace or start-of-string
+  const regex = /(^|[\s])(\/[a-zA-Z][a-zA-Z0-9:\-_]*)/g
+  let match: RegExpExecArray | null = null
+  while ((match = regex.exec(text)) !== null) {
+    const precedingChar = match[1] ?? ''
+    const commandName = match[2] ?? ''
+    // Start position is after the whitespace (if any)
+    const start = match.index + precedingChar.length
+    positions.push({ start, end: start + commandName.length })
+  }
+  return positions
+}
