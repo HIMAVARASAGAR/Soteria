@@ -1,0 +1,235 @@
+{
+  "name": "soteria-vscode",
+  "displayName": "Soteria",
+  "description": "Practical VS Code companion for Soteria with project-aware launch, Control Center, optional Microsoft Foundry / Azure OpenAI terminal env, and chat.",
+  "version": "0.2.0",
+  "publisher": "devnull-bootloader",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Themes",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:soteria.start",
+    "onCommand:soteria.startInWorkspaceRoot",
+    "onCommand:soteria.openDocs",
+    "onCommand:soteria.openSetupDocs",
+    "onCommand:soteria.openWorkspaceProfile",
+    "onCommand:soteria.openControlCenter",
+    "onCommand:soteria.newChat",
+    "onCommand:soteria.openChat",
+    "onCommand:soteria.resumeSession",
+    "onCommand:soteria.abortChat",
+    "onCommand:soteria.setAzureApiKey",
+    "onCommand:soteria.clearAzureApiKey",
+    "onCommand:soteria.configureAzureChat",
+    "onCommand:soteria.openAzureSettings",
+    "onView:soteria.controlCenter",
+    "onView:soteria.chat"
+  ],
+  "main": "./src/extension.js",
+  "files": [
+    "README.md",
+    "media/**",
+    "src/extension.js",
+    "src/presentation.js",
+    "src/state.js",
+    "src/chat/**",
+    "themes/**"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "soteria.start",
+        "title": "Soteria: Launch in Terminal",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.startInWorkspaceRoot",
+        "title": "Soteria: Launch in Workspace Root",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.openDocs",
+        "title": "Soteria: Open Repository",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.openSetupDocs",
+        "title": "Soteria: Open Setup Guide",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.openWorkspaceProfile",
+        "title": "Soteria: Open Workspace Profile",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.openControlCenter",
+        "title": "Soteria: Open Control Center",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.newChat",
+        "title": "Soteria: New Chat",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.openChat",
+        "title": "Soteria: Open Chat Panel",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.resumeSession",
+        "title": "Soteria: Resume Session",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.abortChat",
+        "title": "Soteria: Abort Generation",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.setAzureApiKey",
+        "title": "Soteria: Set Azure / Foundry API Key (Secret Storage)",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.clearAzureApiKey",
+        "title": "Soteria: Clear Azure / Foundry API Key",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.configureAzureChat",
+        "title": "Soteria: Configure Azure / Foundry Chat (wizard)",
+        "category": "Soteria"
+      },
+      {
+        "command": "soteria.openAzureSettings",
+        "title": "Soteria: Open Azure / Foundry Settings",
+        "category": "Soteria"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "soteria",
+          "title": "Soteria",
+          "icon": "media/soteria.svg"
+        }
+      ]
+    },
+    "views": {
+      "soteria": [
+        {
+          "id": "soteria.chat",
+          "name": "Chat",
+          "type": "webview"
+        },
+        {
+          "id": "soteria.controlCenter",
+          "name": "Control Center",
+          "type": "webview"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "soteria.openChat",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l"
+      }
+    ],
+    "configuration": {
+      "title": "Soteria",
+      "properties": {
+        "soteria.launchCommand": {
+          "type": "string",
+          "default": "soteria",
+          "description": "Command run in the integrated terminal when launching Soteria."
+        },
+        "soteria.terminalName": {
+          "type": "string",
+          "default": "Soteria",
+          "description": "Integrated terminal tab name for Soteria sessions."
+        },
+        "soteria.useOpenAIShim": {
+          "type": "boolean",
+          "default": false,
+          "description": "Optionally set CLAUDE_CODE_USE_OPENAI=1 in launched Soteria terminals when Azure injection is off or incomplete."
+        },
+        "soteria.azure.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, launch injects Microsoft Foundry / Azure OpenAI-compatible chat env (OPENAI_* + AZURE_OPENAI_API_VERSION) into the Soteria terminal."
+        },
+        "soteria.azure.endpoint": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Azure resource base URL for OpenAI-compatible chat (example: `https://YOUR_RESOURCE.openai.azure.com`). Do not put `api-version` here; use **Soteria: Azure API Version**."
+        },
+        "soteria.azure.apiVersion": {
+          "type": "string",
+          "default": "2024-12-01-preview",
+          "description": "Azure API version for chat completions (AZURE_OPENAI_API_VERSION)."
+        },
+        "soteria.azure.deployment": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Azure deployment name (maps to `OPENAI_MODEL` for the OpenAI shim)."
+        },
+        "soteria.azure.forceAzureUrlStyle": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sets OPENAI_AZURE_STYLE=1 so deployment URLs and api-key header work on Foundry and non-standard Azure hosts."
+        },
+        "soteria.azure.apiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Optional API key in settings (not recommended). Prefer **Soteria: Set Azure / Foundry API Key**. Secret wins if both are set."
+        },
+        "soteria.permissionMode": {
+          "type": "string",
+          "default": "acceptEdits",
+          "enum": ["default", "acceptEdits", "bypassPermissions", "plan"],
+          "enumDescriptions": [
+            "Prompt for permission on each tool use (requires manual approval)",
+            "Auto-approve file edits, prompt for other operations (recommended)",
+            "Auto-approve all operations without prompting",
+            "Read-only mode — no file modifications allowed"
+          ],
+          "description": "Permission mode for chat sessions. Controls which tool operations are auto-approved."
+        }
+      }
+    },
+    "themes": [
+      {
+        "label": "Soteria Terminal Black",
+        "uiTheme": "vs-dark",
+        "path": "./themes/Soteria-Terminal-Black.json"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "bun test src",
+    "lint": "node scripts/lint.js",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "keywords": [
+    "soteria",
+    "terminal",
+    "theme",
+    "cli",
+    "llm",
+    "azure",
+    "foundry"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HIMAVARASAGAR/Soteria"
+  },
+  "license": "MIT"
+}
