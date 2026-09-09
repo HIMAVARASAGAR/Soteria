@@ -160,7 +160,7 @@ export function SkillPermissionRequest({
       title={`Use skill "${skill}"?`}
       header={
         <>
-          <Text>Claude may use instructions, code, or files from this Skill.</Text>
+          <Text>Soteria may use instructions, code, or files from this Skill.</Text>
           {commandObj?.description ? (
             <Box flexDirection="column" paddingX={2} paddingY={1}>
               <Text dimColor>{commandObj.description}</Text>

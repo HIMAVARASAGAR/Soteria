@@ -131,7 +131,7 @@ export function WebFetchPermissionRequest({
           <Text dimColor>{toolUseConfirm.description}</Text>
         </Box>
       }
-      question="Do you want to allow Claude to fetch this content?"
+      question="Do you want to allow Soteria to fetch this content?"
       options={options}
       onSelect={onSelect}
       onCancel={onCancel}
