@@ -44,6 +44,7 @@ const featureFlags: Record<string, boolean> = {
   MONITOR_TOOL: true,                 // MCP server monitoring/streaming tool
   TEAMMEM: true,                      // Team memory management
   MESSAGE_ACTIONS: true,              // Message action buttons in the UI
+  REACTIVE_COMPACT: true,             // Reactive auto-compaction and retry on prompt context overflow (413/PTL)
 
   // ── Enabled: new activations ────────────────────────────────────────
   DUMP_SYSTEM_PROMPT: true,           // --dump-system-prompt CLI flag for debugging

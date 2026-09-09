@@ -1,7 +1,3 @@
-// Stub — reactiveCompact not included in source snapshot (feature-gated).
-// All call sites are behind feature('REACTIVE_COMPACT') and/or check
-// isReactiveCompactEnabled()/isReactiveOnlyMode(), which return false here,
-// so these inert implementations preserve behavior.
 import type { QuerySource } from '../../constants/querySource.js'
 import type {
   AssistantMessage,
@@ -10,29 +6,33 @@ import type {
 } from '../../types/message.js'
 import type { CacheSafeParams } from '../../utils/forkedAgent.js'
 import type { CompactionResult } from './compact.js'
+import { isPromptTooLongMessage } from '../api/errors.js'
+import { logForDebugging } from '../../utils/debug.js'
 
 export function isReactiveCompactEnabled(): boolean {
-  return false
+  return true
 }
 
-/** Whether /compact should route through the reactive path. Always false. */
+/** Whether /compact should route through the reactive path. Always false to use standard /compact flow. */
 export function isReactiveOnlyMode(): boolean {
   return false
 }
 
 /**
  * Whether a prompt-too-long API error should be withheld pending a reactive
- * compact retry. Always false — reactive compact is disabled here.
+ * compact retry.
  */
 export function isWithheldPromptTooLong(
-  _message: Message | StreamEvent | undefined,
-): _message is AssistantMessage {
-  return false
+  message: Message | StreamEvent | undefined,
+): message is AssistantMessage {
+  if (!message || (message as { type?: string }).type !== 'assistant') {
+    return false
+  }
+  return isPromptTooLongMessage(message as AssistantMessage)
 }
 
 /**
  * Whether a media-size API error should be withheld pending a strip-retry.
- * Always false — reactive compact is disabled here.
  */
 export function isWithheldMediaSizeError(
   _message: Message | StreamEvent | undefined,
@@ -54,31 +54,77 @@ export type ReactiveCompactOutcome =
 
 /**
  * Run reactive compaction in response to a prompt-too-long error (or
- * reactive-only /compact). Inert: always reports an error outcome — never
- * reached in this snapshot because the gates above return false.
+ * reactive-only /compact).
  */
 export async function reactiveCompactOnPromptTooLong(
-  _messages: Message[],
-  _cacheSafeParams: CacheSafeParams,
-  _options: {
+  messages: Message[],
+  cacheSafeParams: CacheSafeParams,
+  options: {
     customInstructions?: string
     trigger: 'manual' | 'auto'
   },
 ): Promise<ReactiveCompactOutcome> {
-  return { ok: false, reason: 'error' }
+  try {
+    const { compactConversation } = await import('./compact.js')
+    const result = await compactConversation(
+      messages,
+      cacheSafeParams.toolUseContext,
+      cacheSafeParams,
+      true,
+      options.customInstructions,
+      options.trigger === 'auto',
+    )
+    return { ok: true, result }
+  } catch (err) {
+    logForDebugging(`[reactiveCompact] reactiveCompactOnPromptTooLong failed: ${err}`, { level: 'warn' })
+    return { ok: false, reason: 'error' }
+  }
 }
 
 /**
  * One-shot reactive compact attempt from the query loop's 413/media-error
- * recovery path. Inert: returns null (no recovery), letting the original
- * error surface — matching the disabled-feature behavior.
+ * recovery path. Runs compaction on the message history so the query loop
+ * can automatically retry the turn within the model's token limits.
  */
-export async function tryReactiveCompact(_params: {
+export async function tryReactiveCompact(params: {
   hasAttempted: boolean
   querySource: QuerySource
   aborted: boolean
   messages: Message[]
   cacheSafeParams: CacheSafeParams
 }): Promise<CompactionResult | null> {
-  return null
+  if (params.hasAttempted || params.aborted) {
+    return null
+  }
+  if (
+    params.querySource === 'compact' ||
+    params.querySource === 'session_memory'
+  ) {
+    return null
+  }
+  try {
+    const { compactConversation } = await import('./compact.js')
+    logForDebugging(
+      `[reactiveCompact] attempting reactive compaction for ${params.messages.length} messages...`,
+      { level: 'info' },
+    )
+    const result = await compactConversation(
+      params.messages,
+      params.cacheSafeParams.toolUseContext,
+      params.cacheSafeParams,
+      true, // suppressFollowUpQuestions
+      undefined, // customInstructions
+      true, // isAutoCompact
+    )
+    logForDebugging(
+      `[reactiveCompact] reactive compaction succeeded. Post-compact token count: ${result.postCompactTokenCount}`,
+      { level: 'info' },
+    )
+    return result
+  } catch (err) {
+    logForDebugging(`[reactiveCompact] reactive compaction failed: ${err}`, {
+      level: 'warn',
+    })
+    return null
+  }
 }

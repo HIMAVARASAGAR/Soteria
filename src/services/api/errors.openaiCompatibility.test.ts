@@ -92,3 +92,73 @@ test('maps tool_call_incompatible category markers to model/tool guidance', () =
   expect(text).toContain('rejected tool-calling payloads')
   expect(text).toContain('/model')
 })
+
+test('maps context_overflow category markers to Prompt is too long for reactive compaction', () => {
+  const error = APIError.generate(
+    400,
+    undefined,
+    'OpenAI API error 400: maximum context length exceeded [openai_category=context_overflow]',
+    new Headers(),
+  )
+
+  const message = getAssistantMessageFromError(error, 'qwen/qwen3.8-27b')
+  const text = getFirstText(message)
+
+  expect(text).toBe('Prompt is too long')
+})
+
+test('maps HTTP 413 without media attachments to Prompt is too long', () => {
+  const error = APIError.generate(
+    413,
+    undefined,
+    'Request too large',
+    new Headers(),
+  )
+
+  const message = getAssistantMessageFromError(error, 'qwen/qwen3.8-27b', {
+    messages: [
+      {
+        type: 'user',
+        message: { role: 'user', content: 'hi' },
+        uuid: '1' as any,
+        session_id: 's1',
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  })
+  const text = getFirstText(message)
+
+  expect(text).toBe('Prompt is too long')
+})
+
+test('maps HTTP 413 with media attachments to Request too large file error', () => {
+  const error = APIError.generate(
+    413,
+    undefined,
+    'Request too large',
+    new Headers(),
+  )
+
+  const message = getAssistantMessageFromError(error, 'claude-3-5-sonnet-20241022', {
+    messages: [
+      {
+        type: 'user',
+        message: {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'check this file' },
+            { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: 'abc' } },
+          ],
+        },
+        uuid: '1' as any,
+        session_id: 's1',
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  })
+  const text = getFirstText(message)
+
+  expect(text).toContain('Request too large')
+  expect(text).toContain('smaller file')
+})
+

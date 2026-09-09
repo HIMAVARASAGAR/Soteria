@@ -129,8 +129,9 @@ function mapOpenAICompatibilityFailureToAssistantMessage(options: {
 
     case 'context_overflow':
       return createAssistantAPIErrorMessage({
-        content: `The conversation exceeded the provider context limit. ${compactHint}`,
+        content: PROMPT_TOO_LONG_ERROR_MESSAGE,
         error: 'invalid_request',
+        errorDetails: options.rawMessage,
       })
 
     case 'tool_call_incompatible':
@@ -906,8 +907,23 @@ export function getAssistantMessageFromError(
   }
 
   // Check for request too large errors (413 status)
-  // This typically happens when a large PDF + conversation context exceeds the 32MB API limit
+  // When large PDF/images are attached, prompt users to resize/shorten the file.
+  // When no large attachments exist (or on OpenAI/Groq gateways), this is a context
+  // length / payload limit error that should route into auto-compaction.
   if (error instanceof APIError && error.status === 413) {
+    const hasMedia = options?.messages?.some(m =>
+      Array.isArray(m.message?.content) &&
+      m.message.content.some(
+        b => b && typeof b === 'object' && ('type' in b) && (b.type === 'image' || b.type === 'document'),
+      ),
+    )
+    if (!hasMedia || isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI)) {
+      return createAssistantAPIErrorMessage({
+        content: PROMPT_TOO_LONG_ERROR_MESSAGE,
+        error: 'invalid_request',
+        errorDetails: error.message,
+      })
+    }
     return createAssistantAPIErrorMessage({
       content: getRequestTooLargeErrorMessage(),
       error: 'invalid_request',

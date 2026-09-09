@@ -3086,15 +3086,18 @@ class OpenAIShimMessages {
         { level: 'warn' },
       )
 
-      throw APIError.generate(
+      const formattedMessage = buildOpenAICompatibilityErrorMessage(
+        `${providerFriendlyName} API error ${status}: ${errorBody}${rateHint}`,
+        failureWithUrl,
+      )
+      const err = APIError.generate(
         status,
         parsedBody,
-        buildOpenAICompatibilityErrorMessage(
-          `${providerFriendlyName} API error ${status}: ${errorBody}${rateHint}`,
-          failureWithUrl,
-        ),
+        formattedMessage,
         responseHeaders,
       )
+      err.message = formattedMessage
+      throw err
     }
 
     let response: Response | undefined
