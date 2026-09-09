@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.7](https://github.com/HIMAVARASAGAR/Soteria/compare/v0.18.6...v0.18.7) (2026-09-09)
+
+
+### Bug Fixes
+
+* **ci:** track plan command, restore bin/soteria launcher, and fix test assertions ([56aba05](https://github.com/HIMAVARASAGAR/Soteria/commit/56aba0523acf8dfcca9a87d6373be52065adff94))
+* replace remaining Claude references with Soteria in dialogs and prompts ([ea04745](https://github.com/HIMAVARASAGAR/Soteria/commit/ea04745421345ffdbca8bb98f8b42c4e65ab6df2))
+* **test:** add in-memory fallback for clipboard operations in headless CI ([8fab66e](https://github.com/HIMAVARASAGAR/Soteria/commit/8fab66e030e192d3a3b241010cc9629a73d8f1b4))
+* **ui:** eliminate double-line row spacing in context grid to render compact 1:1 visual square ([5f00747](https://github.com/HIMAVARASAGAR/Soteria/commit/5f007474260a8b96e936914089235ed89e008419))
+* **ui:** revert /context view to classic grid layout with improved alignment and truncation ([07e5011](https://github.com/HIMAVARASAGAR/Soteria/commit/07e5011e0ef3408ccf26a3832f6f269a842354dc))
+
 ## [0.18.0](https://github.com/HIMAVARASAGAR/Soteria/compare/v0.17.1...v0.18.0) (2026-06-10)
 
 
