@@ -137,7 +137,15 @@ export async function tmuxLoadBuffer(text: string): Promise<boolean> {
  * Returns the sequence for the caller to write to stdout (raw OSC 52
  * outside tmux, DCS-wrapped inside).
  */
+let inMemoryClipboard = ''
+
+/** @internal test-only */
+export function _resetMemoryClipboard(): void {
+  inMemoryClipboard = ''
+}
+
 export async function setClipboard(text: string): Promise<string> {
+  inMemoryClipboard = text
   const b64 = Buffer.from(text, 'utf8').toString('base64')
   const raw = osc(OSC.CLIPBOARD, 'c', b64)
 
@@ -347,10 +355,11 @@ export async function readClipboard(): Promise<string> {
   }
 
   if (process.env['SSH_CONNECTION']) {
-    return await readClipboardNative()
+    const text = await readClipboardNative()
+    if (text) return text
   }
 
-  return ''
+  return inMemoryClipboard
 }
 
 /**
