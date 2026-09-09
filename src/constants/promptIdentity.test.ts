@@ -67,7 +67,7 @@ test('CLI identity prefixes describe Soteria balanced identity', () => {
   expect(getCLISyspromptPrefix()).toContain(
     'strong cybersecurity analysis capabilities',
   )
-  expect(getCLISyspromptPrefix()).not.toContain('Soteria')
+  expect(getCLISyspromptPrefix()).not.toContain('OpenClaude')
   expect(getCLISyspromptPrefix()).not.toContain('Claude Code')
   expect(getCLISyspromptPrefix()).not.toContain('coding agent')
 
@@ -75,7 +75,7 @@ test('CLI identity prefixes describe Soteria balanced identity', () => {
     expect(prefix).toContain('Soteria')
     expect(prefix).toContain('general-purpose assistant')
     expect(prefix).not.toContain('Claude Code')
-    expect(prefix).not.toContain('Soteria')
+    expect(prefix).not.toContain('OpenClaude')
     expect(prefix).not.toContain('coding agent')
   }
 })
@@ -88,7 +88,7 @@ test('simple mode identity describes Soteria balanced identity', async () => {
   expect(prompt[0]).toContain('Soteria')
   expect(prompt[0]).toContain('general-purpose assistant')
   expect(prompt[0]).toContain('strong cybersecurity analysis capabilities')
-  expect(prompt[0]).not.toContain('Soteria')
+  expect(prompt[0]).not.toContain('OpenClaude')
   expect(prompt[0]).not.toContain('Claude Code')
   expect(prompt[0]).not.toContain('coding agent')
 })
@@ -114,7 +114,7 @@ test('default agent prompt describes Soteria balanced identity', () => {
   expect(DEFAULT_AGENT_PROMPT).toContain(
     'strong cybersecurity analysis capabilities',
   )
-  expect(DEFAULT_AGENT_PROMPT).not.toContain('Soteria')
+  expect(DEFAULT_AGENT_PROMPT).not.toContain('OpenClaude')
   expect(DEFAULT_AGENT_PROMPT).not.toContain('Claude Code')
   expect(DEFAULT_AGENT_PROMPT).not.toContain('coding agent')
 })

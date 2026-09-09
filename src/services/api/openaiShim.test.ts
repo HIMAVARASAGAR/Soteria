@@ -5462,6 +5462,95 @@ test('Groq: keeps max_completion_tokens and strips unsupported store', async () 
   expect(requestBody?.store).toBeUndefined()
 })
 
+test('Groq: automatically slims system prompt and tool definitions to prevent 8,000 TPM limit overflow', async () => {
+  process.env.OPENAI_BASE_URL = 'https://api.groq.com/openai/v1'
+  process.env.OPENAI_API_KEY = 'gsk-test'
+
+  let requestBody: Record<string, unknown> | undefined
+  globalThis.fetch = (async (_input, init) => {
+    requestBody = JSON.parse(String(init?.body))
+    return new Response(
+      JSON.stringify({
+        id: 'chatcmpl-slim-1',
+        model: 'openai/gpt-oss-120b',
+        choices: [
+          { message: { role: 'assistant', content: 'hello' }, finish_reason: 'stop' },
+        ],
+        usage: { prompt_tokens: 10, completion_tokens: 1, total_tokens: 11 },
+      }),
+      { headers: { 'Content-Type': 'application/json' } },
+    )
+  }) as unknown as FetchType
+
+  const verboseSystem = `You are Soteria, an interactive general-purpose assistant...
+${'Verbose instruction paragraph '.repeat(200)}
+Primary working directory: /Users/test/workspace
+Platform: darwin
+Shell: /bin/zsh
+OS Version: Darwin 24.1.0
+${'More verbose guidelines and output style rules '.repeat(200)}`
+
+  const verboseTools = [
+    {
+      name: 'Bash',
+      description: 'Verbose git committing instructions and PR guides '.repeat(100),
+      input_schema: {
+        type: 'object',
+        properties: {
+          command: {
+            type: 'string',
+            description: 'The shell command to execute in the user terminal. Avoid interactive prompts. '.repeat(20),
+          },
+        },
+        required: ['command'],
+      },
+    },
+    {
+      name: 'FileEdit',
+      description: 'Verbose file editing rules and instructions '.repeat(100),
+      input_schema: {
+        type: 'object',
+        properties: {
+          file_path: { type: 'string', description: 'Path to the file to edit on disk.' },
+          old_string: { type: 'string', description: 'Unique text to replace in the file.' },
+          new_string: { type: 'string', description: 'New replacement text to write.' },
+        },
+        required: ['file_path', 'old_string', 'new_string'],
+      },
+    },
+  ]
+
+  const client = createOpenAIShimClient({}) as OpenAIShimClient
+  await client.beta.messages.create({
+    model: 'openai/gpt-oss-120b',
+    system: verboseSystem,
+    messages: [{ role: 'user', content: 'hi' }],
+    tools: verboseTools,
+    max_tokens: 256,
+    stream: false,
+  })
+
+  // Verify system prompt was condensed
+  const messages = requestBody?.messages as Array<{ role: string; content: string }>
+  const systemMsg = messages.find(m => m.role === 'system')
+  expect(systemMsg).toBeDefined()
+  expect(systemMsg!.content.length).toBeLessThan(1200)
+  expect(systemMsg!.content).toContain('Working directory: /Users/test/workspace')
+
+  // Verify tools were slimmed
+  const tools = requestBody?.tools as Array<{
+    type: string
+    function: { name: string; description: string; parameters: { properties: Record<string, { description: string }> } }
+  }>
+  expect(tools.length).toBe(2)
+  expect(tools[0].function.description).toBe(
+    'Execute a bash command in the terminal. Returns stdout, stderr, and exit code. Use for system commands, tests, git, builds.',
+  )
+  expect(tools[0].function.parameters.properties.command.description).toBe(
+    'The shell command to execute in the user terminal.',
+  )
+})
+
 test('Moonshot: echoes reasoning_content on assistant tool-call messages', async () => {
   // Regression for: "API Error: 400 {"error":{"message":"thinking is enabled
   // but reasoning_content is missing in assistant tool call message at index

@@ -82,6 +82,12 @@ import {
   classifyOpenAINetworkFailure,
 } from './openaiErrorClassification.js'
 import { sanitizeSchemaForOpenAICompat } from '../../utils/schemaSanitizer.js'
+import {
+  isConstrainedProvider,
+  getConciseToolDescription,
+  slimToolSchema,
+  getSlimSystemPrompt,
+} from './payloadSlimming.js'
 import { redactSecretValueForDisplay } from '../../utils/providerProfile.js'
 import { shouldRedactUrlQueryParam } from '../../utils/urlRedaction.js'
 import {
@@ -543,11 +549,13 @@ function convertMessages(
     preserveReasoningContent?: boolean
     reasoningContentFallback?: '' | 'omit'
     preserveGeminiThoughtSignature?: boolean
+    isConstrained?: boolean
   },
 ): OpenAIMessage[] {
   const preserveReasoningContent = options?.preserveReasoningContent === true
   const reasoningContentFallback = options?.reasoningContentFallback
   const preserveGeminiThoughtSignature = options?.preserveGeminiThoughtSignature === true
+  const isConstrained = options?.isConstrained === true
   const result: OpenAIMessage[] = []
   const knownToolCallIds = new Set<string>()
 
@@ -569,8 +577,11 @@ function convertMessages(
   }
 
   // System message first
-  const sysText = convertSystemPrompt(system)
+  let sysText = convertSystemPrompt(system)
   if (sysText) {
+    if (isConstrained) {
+      sysText = getSlimSystemPrompt(sysText)
+    }
     result.push({ role: 'system', content: sysText })
   }
 
@@ -901,20 +912,25 @@ function normalizeSchemaForOpenAI(
   return record
 }
 
-function convertTools(
+export function convertTools(
   tools: Array<{ name: string; description?: string; input_schema?: Record<string, unknown> }>,
-  options: { skipStrict?: boolean } = {},
+  options: { skipStrict?: boolean; isConstrained?: boolean } = {},
 ): OpenAITool[] {
   const isGemini = isGeminiMode()
   const strict =
     !isGemini &&
     !isEnvTruthy(process.env.SOTERIA_DISABLE_STRICT_TOOLS) &&
     !options.skipStrict
+  const isConstrained = options.isConstrained === true
 
   return tools
     .filter(t => t.name !== 'ToolSearchTool') // Not relevant for OpenAI
     .map(t => {
-      const schema = { ...(t.input_schema ?? { type: 'object', properties: {} }) } as Record<string, unknown>
+      let schema = { ...(t.input_schema ?? { type: 'object', properties: {} }) } as Record<string, unknown>
+
+      if (isConstrained) {
+        schema = slimToolSchema(schema)
+      }
 
       // For Codex/OpenAI: promote known Agent sub-fields into required[] only if
       // they actually exist in properties (Gemini rejects required keys absent from properties).
@@ -927,11 +943,15 @@ function convertTools(
         }
       }
 
+      const description = isConstrained
+        ? getConciseToolDescription(t.name, t.description)
+        : (t.description ?? '')
+
       return {
         type: 'function' as const,
         function: {
           name: t.name,
-          description: t.description ?? '',
+          description,
           parameters: normalizeSchemaForOpenAI(schema, strict),
         },
       }
@@ -2416,6 +2436,7 @@ class OpenAIShimMessages {
         : shimConfig.endpointPath?.startsWith('/models/gemini-')
           ? 'gemini'
           : request.transport
+    const isConstrained = isConstrainedProvider(request.baseUrl, request.resolvedModel)
     const openaiMessages = convertMessages(compressedMessages, params.system, {
       preserveReasoningContent: shimConfig.preserveReasoningContent,
       reasoningContentFallback: shimConfig.reasoningContentFallback,
@@ -2423,6 +2444,7 @@ class OpenAIShimMessages {
         request.resolvedModel,
         request.baseUrl,
       ),
+      isConstrained,
     })
 
     const body: Record<string, unknown> = {
@@ -2518,7 +2540,7 @@ class OpenAIShimMessages {
           description?: string
           input_schema?: Record<string, unknown>
         }>,
-        { skipStrict: fastPath.skipStrictTools },
+        { skipStrict: fastPath.skipStrictTools, isConstrained },
       )
       if (converted.length > 0) {
         body.tools = converted

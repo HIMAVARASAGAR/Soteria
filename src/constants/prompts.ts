@@ -61,6 +61,7 @@ import { loadMemoryPrompt } from '../memdir/memdir.js'
 import { isUndercover } from '../utils/undercover.js'
 import { getAntModelOverrideConfig } from '../utils/model/antModels.js'
 import { isMcpInstructionsDeltaEnabled } from '../utils/mcpInstructionsDelta.js'
+import { isConstrainedProvider } from '../services/api/payloadSlimming.js'
 
 // Dead code elimination: conditional imports for feature-gated modules
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -444,6 +445,26 @@ export async function getSystemPrompt(
   if (isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE)) {
     return [
       `You are Soteria, a general-purpose assistant and CLI with strong cybersecurity analysis capabilities.\n\nCWD: ${getCwd()}\nDate: ${getSessionStartDate()}`,
+    ]
+  }
+
+  if (isConstrainedProvider(process.env.OPENAI_BASE_URL, model)) {
+    const cwd = getCwd()
+    const [isGit, unameSR] = await Promise.all([getIsGit(), getUnameSR()])
+    return [
+      `You are Soteria, an interactive general-purpose assistant and CLI with strong cybersecurity analysis and coding capabilities.
+Primary working directory: ${cwd}
+Is a git repository: ${isGit}
+Platform: ${env.platform}
+${getShellInfoLine()}
+OS Version: ${unameSR}
+
+Directives:
+- Inspect existing files and understand codebase structure before proposing modifications.
+- Prefer editing existing files with targeted, minimal changes.
+- Reserve Bash for shell commands; use dedicated tools to read and edit files.
+- Verify changes using terminal commands/tests before concluding tasks.
+- Keep responses concise, direct, and factual.`,
     ]
   }
 
