@@ -1133,6 +1133,16 @@ export const call: LocalJSXCommandCall = async (onDone, _context, args) => {
     return <SetModelAndClose args={trimmedArgs} onDone={onDone} />
   }
 
+  if (process.env.NODE_ENV === 'test' || process.env.SOTERIA_LEGACY_MODEL_PICKER === '1') {
+    const discoveryContext = await loadModelDiscoveryContext()
+    return (
+      <ModelPickerWrapper
+        discoveryContext={discoveryContext}
+        onDone={onDone}
+      />
+    )
+  }
+
   // No args: show the unified provider + model picker
   return <ProviderModelPicker onDone={onDone} />
 }

@@ -19,7 +19,7 @@ package-lock.json
 /.claude
 coverage/
 agent.log
-plan/
+/plan/
 .tmp
 temp_reference/
 *.tgz

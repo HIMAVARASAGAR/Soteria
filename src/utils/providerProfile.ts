@@ -1651,18 +1651,12 @@ export async function buildLaunchEnv(options: {
     (!persistedOpenAIModel && !persistedOpenAIBaseUrl) ||
     persistedOpenAIRequest.transport !== 'codex_responses'
 
-  // When a persisted profile exists, its values MUST win over stale shell env
-  // left over from a previous session (e.g. Ollama's OPENAI_MODEL lingering
-  // after switching to Groq). Without this, the persisted profile is ignored.
-  const preferPersisted = options.persisted != null && (persistedOpenAIModel || persistedOpenAIBaseUrl)
   const env: ProfileEnv = {
     OPENAI_BASE_URL:
-      (preferPersisted && persistedOpenAIBaseUrl) ||
       (useShellOpenAIConfig ? shellOpenAIBaseUrl : undefined) ||
       (usePersistedOpenAIConfig ? persistedOpenAIBaseUrl : undefined) ||
       DEFAULT_OPENAI_BASE_URL,
     OPENAI_MODEL:
-      (preferPersisted && persistedOpenAIModel) ||
       (useShellOpenAIConfig ? shellOpenAIModel : undefined) ||
       (usePersistedOpenAIConfig ? persistedOpenAIModel : undefined) ||
       defaultOpenAIModel,
@@ -1763,31 +1757,18 @@ export async function buildStartupEnvFromProfile(options?: {
   // stale legacy file (e.g. OpenAI defaults from an earlier manual setup)
   // would otherwise overwrite the correct plural env and surface as the
   // "banner shows gpt-4o / api.openai.com even though my saved profile is
-  // Moonshot" bug.
-  //
-  // EXCEPTION: when the legacy file exists and the current env does NOT match
-  // it, the legacy file wins. This handles the case where the plural system
-  // applied a stale profile (e.g. Ollama) but the user saved a new legacy
-  // profile (e.g. Groq) via /model.
-  const legacyEnvMatchesCurrent =
-    persisted == null ||
-    (persisted.env.OPENAI_MODEL === processEnv.OPENAI_MODEL &&
-     persisted.env.OPENAI_BASE_URL === processEnv.OPENAI_BASE_URL)
-  if (profileManagedEnv && legacyEnvMatchesCurrent) {
+  if (profileManagedEnv) {
     return processEnv
   }
 
   // If startup already has a concrete provider selection, keep trusting it.
   // This prevents legacy profiles or the fresh-install default from becoming
   // a silent third precedence layer over explicit env/flags.
-  // NOTE: only skip if there is NO saved profile. When a profile exists it
-  // must win over stale env left over from a previous session (e.g. Ollama's
-  // OPENAI_BASE_URL lingering after switching to Groq).
-  if (hasConcreteProviderSelection(processEnv) && !persisted) {
+  if (hasConcreteProviderSelection(processEnv)) {
     return processEnv
   }
 
-  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB) && !persisted) {
+  if (isEnvTruthy(processEnv.CLAUDE_CODE_USE_GITHUB)) {
     return processEnv
   }
 

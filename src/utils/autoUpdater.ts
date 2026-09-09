@@ -371,10 +371,12 @@ export async function getLatestVersion(
     // Secondary fallback: native fetch
     try {
       const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
-      const res = await fetch(`https://registry.npmjs.org/${pkgUrl}`, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(8000),
-      })
+      const res = await withTimeoutSignal(8000, abortSignal =>
+        fetch(`https://registry.npmjs.org/${pkgUrl}`, {
+          headers: { Accept: 'application/json' },
+          signal: abortSignal,
+        }),
+      )
       if (res.ok) {
         const data = (await res.json()) as { 'dist-tags'?: Record<string, string> }
         const tagVersion = data?.['dist-tags']?.[npmTag]
@@ -445,10 +447,12 @@ export async function getNpmDistTags(): Promise<NpmDistTags> {
   } catch (error) {
     try {
       const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
-      const res = await fetch(`https://registry.npmjs.org/${pkgUrl}`, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(8000),
-      })
+      const res = await withTimeoutSignal(8000, abortSignal =>
+        fetch(`https://registry.npmjs.org/${pkgUrl}`, {
+          headers: { Accept: 'application/json' },
+          signal: abortSignal,
+        }),
+      )
       if (res.ok) {
         const data = (await res.json()) as { 'dist-tags'?: Record<string, string> }
         const tags = data?.['dist-tags']
