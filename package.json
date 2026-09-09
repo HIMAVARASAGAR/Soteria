@@ -25,7 +25,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "bun run scripts/build.ts",
+    "build": "bun scripts/build.ts",
     "integrations:generate": "bun run scripts/generate-integrations-artifacts.ts",
     "integrations:check": "bun run scripts/generate-integrations-artifacts.ts --check",
     "dev": "bun run scripts/dev.ts",
@@ -60,7 +60,7 @@
     "test:provider-recommendation": "bun test src/utils/providerRecommendation.test.ts src/utils/providerProfile.test.ts",
     "typecheck": "tsc --noEmit",
     "typecheck:type-tests": "bun run scripts/typecheck-type-tests.ts",
-    "smoke": "bun run build && node dist/cli.mjs --version",
+    "smoke": "bun scripts/build.ts && node dist/cli.mjs --version",
     "check": "bun run smoke && bun run test:full",
     "verify:privacy": "bun run scripts/verify-no-phone-home.ts",
     "build:verified": "bun run build && bun run verify:privacy",

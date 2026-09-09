@@ -56,6 +56,15 @@ function restoreEnv(key: string, value: string | undefined): void {
   }
 }
 
+function createMockStdin(): NodeJS.ReadStream {
+  const stdin = new PassThrough()
+  ;(stdin as unknown as { isTTY: boolean; setRawMode: () => void; ref: () => void; unref: () => void }).isTTY = true
+  ;(stdin as unknown as { setRawMode: () => void }).setRawMode = () => {}
+  ;(stdin as unknown as { ref: () => void }).ref = () => {}
+  ;(stdin as unknown as { unref: () => void }).unref = () => {}
+  return stdin as unknown as NodeJS.ReadStream
+}
+
 async function expectModelCommandDoesNotWaitForRefresh(
   commandPromise: Promise<unknown>,
 ): Promise<unknown> {
@@ -360,7 +369,10 @@ async function renderModelCommandWithCapturedPicker(
     <AppStateProvider initialState={options?.initialState as never}>
       {element}
     </AppStateProvider>,
-    stdout as unknown as NodeJS.WriteStream,
+    {
+      stdout: stdout as unknown as NodeJS.WriteStream,
+      stdin: createMockStdin(),
+    },
   )
 
   await waitForCondition(() => capturedProps !== undefined)
@@ -1090,7 +1102,10 @@ test('/model applies providerProfileModelPickerMode profile override on descript
   ;(stdout as unknown as { columns: number }).columns = 120
   const instance = await render(
     <AppStateProvider>{element}</AppStateProvider>,
-    stdout as unknown as NodeJS.WriteStream,
+    {
+      stdout: stdout as unknown as NodeJS.WriteStream,
+      stdin: createMockStdin(),
+    },
   )
 
   try {
@@ -2595,7 +2610,10 @@ test('interactive model picker rejects models blocked by availableModels before 
     >
       {element}
     </AppStateProvider>,
-    stdout as unknown as NodeJS.WriteStream,
+    {
+      stdout: stdout as unknown as NodeJS.WriteStream,
+      stdin: createMockStdin(),
+    },
   )
 
   try {

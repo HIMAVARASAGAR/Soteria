@@ -331,10 +331,11 @@ export async function update() {
 
     process.stderr.write('  • Check if you need to login: npm whoami\n')
     await gracefulShutdown(1)
+    return
   }
 
   // Check if current version is already at or above latest available version
-  if (gte(MACRO.DISPLAY_VERSION, latestVersion)) {
+  if (gte(MACRO.DISPLAY_VERSION ?? MACRO.VERSION ?? '0.0.0', latestVersion)) {
     writeToStdout(
       chalk.green(`Soteria is up to date (${MACRO.DISPLAY_VERSION})`) + '\n',
     )

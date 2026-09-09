@@ -351,7 +351,7 @@ export async function getLatestVersion(
   // Fast path: direct public HTTP request to npm registry
   try {
     const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
-    const response = await withTimeoutSignal(3000, abortSignal =>
+    const response = await withTimeoutSignal(8000, abortSignal =>
       axios.get<{ 'dist-tags'?: Record<string, string> }>(
         `https://registry.npmjs.org/${pkgUrl}`,
         {
@@ -368,6 +368,21 @@ export async function getLatestVersion(
       }
     }
   } catch (error) {
+    // Secondary fallback: native fetch
+    try {
+      const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
+      const res = await fetch(`https://registry.npmjs.org/${pkgUrl}`, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      })
+      if (res.ok) {
+        const data = (await res.json()) as { 'dist-tags'?: Record<string, string> }
+        const tagVersion = data?.['dist-tags']?.[npmTag]
+        if (tagVersion) {
+          return tagVersion
+        }
+      }
+    } catch {}
     logForDebugging(
       `getLatestVersion: HTTP fetch failed, falling back to npm view: ${error}`,
     )
@@ -411,7 +426,7 @@ export async function getNpmDistTags(): Promise<NpmDistTags> {
   // Fast path: direct HTTP request to npm registry
   try {
     const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
-    const response = await withTimeoutSignal(3000, abortSignal =>
+    const response = await withTimeoutSignal(8000, abortSignal =>
       axios.get<{ 'dist-tags'?: Record<string, string> }>(
         `https://registry.npmjs.org/${pkgUrl}`,
         {
@@ -428,6 +443,23 @@ export async function getNpmDistTags(): Promise<NpmDistTags> {
       }
     }
   } catch (error) {
+    try {
+      const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
+      const res = await fetch(`https://registry.npmjs.org/${pkgUrl}`, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      })
+      if (res.ok) {
+        const data = (await res.json()) as { 'dist-tags'?: Record<string, string> }
+        const tags = data?.['dist-tags']
+        if (tags) {
+          return {
+            latest: typeof tags.latest === 'string' ? tags.latest : null,
+            stable: typeof tags.stable === 'string' ? tags.stable : null,
+          }
+        }
+      }
+    } catch {}
     logForDebugging(
       `getNpmDistTags: HTTP fetch failed, falling back to npm view: ${error}`,
     )

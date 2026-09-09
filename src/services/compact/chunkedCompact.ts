@@ -65,7 +65,7 @@ function clampOversizedMessage(message: Message, maxTokens: number): Message {
         ...message.message,
         content: truncatedText,
       },
-    }
+    } as unknown as Message
   }
 
   // If array of content blocks, keep blocks until budget or truncate large text blocks
@@ -95,7 +95,7 @@ function clampOversizedMessage(message: Message, maxTokens: number): Message {
         ...message.message,
         content: newContent,
       },
-    }
+    } as unknown as Message
   }
 
   return message
