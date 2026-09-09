@@ -209,7 +209,7 @@ export function ContextVisualization({ data }: Props) {
         {/* Left Column: 2D Grid */}
         <Box flexDirection="column" flexShrink={0}>
           {gridRows.map((row, rowIndex) => (
-            <Box key={rowIndex} flexDirection="row" marginLeft={-1}>
+            <Text key={rowIndex}>
               {row.map((square, colIndex) => {
                 if (square.categoryName === 'Free space') {
                   return (
@@ -234,20 +234,20 @@ export function ContextVisualization({ data }: Props) {
                   </Text>
                 );
               })}
-            </Box>
+            </Text>
           ))}
         </Box>
 
         {/* Right Column: Model Stats & Aligned Category Breakdown */}
         <Box flexDirection="column" flexShrink={0}>
-          <Box flexDirection="row" flexWrap="wrap">
+          <Box flexDirection="row">
             <Text bold={true}>{model}</Text>
             <Text dimColor={true}> · </Text>
             <Text bold={true} color={usageColor}>
               {formatTokens(totalTokens)}
             </Text>
             <Text dimColor={true}>
-              /{formatTokens(rawMaxTokens)} tokens ({percentage}%)
+              /{formatTokens(rawMaxTokens)} ({percentage}%)
             </Text>
           </Box>
 
