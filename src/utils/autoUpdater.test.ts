@@ -4,8 +4,8 @@ import axios from 'axios';
 // Set up MACRO global before importing autoUpdater
 (globalThis as any).MACRO = {
   PACKAGE_URL: '@himavarasagar/soteria',
-  VERSION: '0.18.4',
-  DISPLAY_VERSION: '0.18.4',
+  VERSION: '0.18.5',
+  DISPLAY_VERSION: '0.18.5',
 };
 
 import { getLatestVersion, getNpmDistTags } from './autoUpdater.js';

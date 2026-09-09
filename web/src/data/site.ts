@@ -7,7 +7,7 @@ export const SITE = {
   installCommand: 'npm install -g @himavarasagar/soteria@latest',
   npmUrl: 'https://www.npmjs.com/package/@himavarasagar/soteria',
   github: 'https://github.com/HIMAVARASAGAR/Soteria',
-  version: '0.18.4',
+  version: '0.18.5',
   ogDefault: '/og/default.png',
   ogDocs: '/og/docs.png',
 } as const
