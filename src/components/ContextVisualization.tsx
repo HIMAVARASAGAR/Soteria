@@ -10,6 +10,7 @@ import { plural } from '../utils/stringUtils.js';
 import { ContextSuggestions } from './ContextSuggestions.js';
 
 const RESERVED_CATEGORY_NAME = 'Autocompact buffer';
+const MANUAL_COMPACT_BUFFER_NAME = 'Compact buffer';
 const SOURCE_DISPLAY_ORDER = ['Project', 'User', 'Managed', 'Plugin', 'Built-in'] as const;
 
 /**
@@ -60,7 +61,7 @@ function CollapseStatus() {
         );
       }
       return (
-        <Box flexDirection="column" marginTop={1}>
+        <Box flexDirection="column" marginTop={0}>
           <Text dimColor={true}>Context strategy: collapse ({summary})</Text>
           {errorLine}
         </Box>
@@ -119,6 +120,7 @@ export function ContextVisualization({ data }: Props) {
     totalTokens,
     rawMaxTokens,
     percentage,
+    gridRows,
     model,
     memoryFiles,
     mcpTools,
@@ -132,379 +134,276 @@ export function ContextVisualization({ data }: Props) {
       cat.tokens > 0 &&
       cat.name !== 'Free space' &&
       cat.name !== RESERVED_CATEGORY_NAME &&
+      cat.name !== MANUAL_COMPACT_BUFFER_NAME &&
       !cat.isDeferred,
   );
 
   const freeCat = categories.find(c => c.name === 'Free space');
   const freeTokens = freeCat ? freeCat.tokens : Math.max(0, rawMaxTokens - totalTokens);
-  const freePercent = ((freeTokens / rawMaxTokens) * 100).toFixed(1);
 
-  const autocompactCategory = categories.find(c => c.name === RESERVED_CATEGORY_NAME);
+  const autocompactCategory = categories.find(
+    c => c.name === RESERVED_CATEGORY_NAME || c.name === MANUAL_COMPACT_BUFFER_NAME,
+  );
   const hasDeferredMcpTools = categories.some(cat => cat.isDeferred && cat.name.includes('MCP'));
 
-  // Multi-segment progress bar computation
-  const BAR_WIDTH = 42;
-  const activeSegments: Array<{ name: string; color: any; blocks: number }> = [];
-  let allocatedBlocks = 0;
+  // Build aligned legend items
+  interface LegendItem {
+    name: string;
+    tokens: number;
+    color?: any;
+    symbol: string;
+    isDeferred?: boolean;
+    isDim?: boolean;
+  }
+
+  const legendItems: LegendItem[] = [];
 
   for (const cat of visibleCategories) {
-    const share = cat.tokens / rawMaxTokens;
-    let blocks = Math.round(share * BAR_WIDTH);
-    if (blocks === 0 && cat.tokens > 0 && allocatedBlocks < BAR_WIDTH) {
-      blocks = 1;
-    }
-    blocks = Math.min(blocks, BAR_WIDTH - allocatedBlocks);
-    allocatedBlocks += blocks;
-    if (blocks > 0) {
-      activeSegments.push({
-        name: cat.name,
-        color: cat.color || 'cyan',
-        blocks,
-      });
-    }
+    legendItems.push({
+      name: cat.name,
+      tokens: cat.tokens,
+      color: cat.color,
+      symbol: '⛁',
+      isDeferred: cat.isDeferred,
+    });
   }
 
-  let autocompactBlocks = 0;
   if (autocompactCategory && autocompactCategory.tokens > 0) {
-    const share = autocompactCategory.tokens / rawMaxTokens;
-    autocompactBlocks = Math.min(
-      Math.max(1, Math.round(share * BAR_WIDTH)),
-      Math.max(0, BAR_WIDTH - allocatedBlocks),
-    );
-    allocatedBlocks += autocompactBlocks;
+    legendItems.push({
+      name: autocompactCategory.name,
+      tokens: autocompactCategory.tokens,
+      color: autocompactCategory.color,
+      symbol: '⛝',
+      isDim: true,
+    });
   }
 
-  const freeBlocks = Math.max(0, BAR_WIDTH - allocatedBlocks);
+  if (freeTokens > 0) {
+    legendItems.push({
+      name: 'Free space',
+      tokens: freeTokens,
+      symbol: '⛶',
+      isDim: true,
+    });
+  }
 
-  // Suggestions
+  const maxLabelLen = legendItems.length > 0 ? Math.max(...legendItems.map(i => `${i.name}:`.length)) : 12;
+  const maxTokensLen = legendItems.length > 0 ? Math.max(...legendItems.map(i => formatTokens(i.tokens).length)) : 4;
+
+  const usageColor = percentage >= 80 ? 'error' : percentage >= 60 ? 'warning' : undefined;
+
   const suggestions = generateContextSuggestions(data);
 
-  // Usage color indicator
-  const usageColor = percentage >= 80 ? 'error' : percentage >= 60 ? 'warning' : 'success';
+  const loadedMcpTools = mcpTools.filter(t => t.isLoaded);
+  const deferredMcpTools = mcpTools.filter(t => !t.isLoaded);
 
   return (
-    <Box flexDirection="column" paddingX={1} marginY={1}>
-      {/* Overview Main Card */}
-      <Box
-        flexDirection="column"
-        borderStyle="round"
-        borderColor="inactive"
-        paddingX={2}
-        paddingY={1}
-      >
-        {/* Title and Model Header */}
-        <Box flexDirection="row" justifyContent="space-between">
-          <Box>
-            <Text bold={true} color="claudeBlue">
-              ⚡ Context Window
+    <Box flexDirection="column" paddingLeft={1}>
+      {/* Title */}
+      <Box marginBottom={1}>
+        <Text bold={true}>Context Usage</Text>
+      </Box>
+
+      {/* Grid and Summary Side-by-Side */}
+      <Box flexDirection="row" gap={2}>
+        {/* Left Column: 2D Grid */}
+        <Box flexDirection="column" flexShrink={0}>
+          {gridRows.map((row, rowIndex) => (
+            <Box key={rowIndex} flexDirection="row" marginLeft={-1}>
+              {row.map((square, colIndex) => {
+                if (square.categoryName === 'Free space') {
+                  return (
+                    <Text key={colIndex} dimColor={true}>
+                      {'⛶ '}
+                    </Text>
+                  );
+                }
+                if (
+                  square.categoryName === RESERVED_CATEGORY_NAME ||
+                  square.categoryName === MANUAL_COMPACT_BUFFER_NAME
+                ) {
+                  return (
+                    <Text key={colIndex} color={square.color}>
+                      {'⛝ '}
+                    </Text>
+                  );
+                }
+                return (
+                  <Text key={colIndex} color={square.color}>
+                    {square.squareFullness >= 0.7 ? '⛁ ' : '⛀ '}
+                  </Text>
+                );
+              })}
+            </Box>
+          ))}
+        </Box>
+
+        {/* Right Column: Model Stats & Aligned Category Breakdown */}
+        <Box flexDirection="column" flexShrink={0}>
+          <Box flexDirection="row" flexWrap="wrap">
+            <Text bold={true}>{model}</Text>
+            <Text dimColor={true}> · </Text>
+            <Text bold={true} color={usageColor}>
+              {formatTokens(totalTokens)}
             </Text>
-            <Text dimColor={true}> · {model}</Text>
-          </Box>
-          <Box>
-            <Text color={usageColor} bold={true}>
-              {percentage}%
-            </Text>
-            <Text dimColor={true}> utilized</Text>
-          </Box>
-        </Box>
-
-        {/* Token Count Badges */}
-        <Box flexDirection="row" marginTop={1} gap={1}>
-          <Text>
-            Used: <Text bold={true}>{formatTokens(totalTokens)}</Text>
-            <Text dimColor={true}> / {formatTokens(rawMaxTokens)} tokens</Text>
-          </Text>
-          <Text dimColor={true}>·</Text>
-          <Text>
-            Available: <Text color="success" bold={true}>{formatTokens(freeTokens)}</Text>
-            <Text dimColor={true}> tokens ({freePercent}%)</Text>
-          </Text>
-        </Box>
-
-        {/* Multi-Segment Visual Progress Bar */}
-        <Box flexDirection="column" marginTop={1}>
-          <Box flexDirection="row" alignItems="center">
-            <Text dimColor={true}>[</Text>
-            {activeSegments.map(seg => (
-              <Text key={seg.name} color={seg.color}>
-                {'█'.repeat(seg.blocks)}
-              </Text>
-            ))}
-            {autocompactBlocks > 0 && (
-              <Text color="warning">
-                {'▨'.repeat(autocompactBlocks)}
-              </Text>
-            )}
-            {freeBlocks > 0 && (
-              <Text dimColor={true}>
-                {'░'.repeat(freeBlocks)}
-              </Text>
-            )}
-            <Text dimColor={true}>]</Text>
-          </Box>
-        </Box>
-
-        {/* API Usage / Cache Info (if available) */}
-        {apiUsage && (
-          <Box flexDirection="row" marginTop={1} gap={2}>
             <Text dimColor={true}>
-              Cache: read <Text bold={true}>{formatTokens(apiUsage.cache_read_input_tokens)}</Text>
-              {' · '}created <Text bold={true}>{formatTokens(apiUsage.cache_creation_input_tokens)}</Text>
+              /{formatTokens(rawMaxTokens)} tokens ({percentage}%)
             </Text>
           </Box>
-        )}
 
-        {/* Context Collapse Status */}
-        <CollapseStatus />
-
-        {/* Category Breakdown Table */}
-        <Box flexDirection="column" marginTop={1}>
-          <Box flexDirection="row" justifyContent="space-between" width="100%" marginBottom={1}>
-            <Box width={24}>
-              <Text dimColor={true} bold={true}>
-                CATEGORY
+          {apiUsage && (apiUsage.cache_read_input_tokens > 0 || apiUsage.cache_creation_input_tokens > 0) && (
+            <Box marginTop={0}>
+              <Text dimColor={true}>
+                Cache: read <Text bold={true}>{formatTokens(apiUsage.cache_read_input_tokens)}</Text>
+                {' · '}created <Text bold={true}>{formatTokens(apiUsage.cache_creation_input_tokens)}</Text>
               </Text>
-            </Box>
-            <Box width={16}>
-              <Text dimColor={true} bold={true}>
-                TOKENS
-              </Text>
-            </Box>
-            <Box width={10}>
-              <Text dimColor={true} bold={true}>
-                SHARE
-              </Text>
-            </Box>
-            <Box flexGrow={1}>
-              <Text dimColor={true} bold={true}>
-                DISTRIBUTION
-              </Text>
-            </Box>
-          </Box>
-
-          {/* Active Categories */}
-          {visibleCategories.map(cat => {
-            const catPercent = ((cat.tokens / rawMaxTokens) * 100).toFixed(1);
-            const miniBarLen = Math.max(1, Math.min(20, Math.round((cat.tokens / rawMaxTokens) * 20)));
-            return (
-              <Box key={cat.name} flexDirection="row" justifyContent="space-between" width="100%">
-                <Box width={24}>
-                  <Text color={cat.color || 'cyan'}>● </Text>
-                  <Text>{cat.name}</Text>
-                </Box>
-                <Box width={16}>
-                  <Text dimColor={true}>{formatTokens(cat.tokens)}</Text>
-                </Box>
-                <Box width={10}>
-                  <Text dimColor={true}>{catPercent}%</Text>
-                </Box>
-                <Box flexGrow={1}>
-                  <Text color={cat.color || 'cyan'}>{'━'.repeat(miniBarLen)}</Text>
-                </Box>
-              </Box>
-            );
-          })}
-
-          {/* Autocompact Buffer if present */}
-          {autocompactCategory && autocompactCategory.tokens > 0 && (
-            <Box flexDirection="row" justifyContent="space-between" width="100%">
-              <Box width={24}>
-                <Text color="warning">▨ </Text>
-                <Text dimColor={true}>{autocompactCategory.name}</Text>
-              </Box>
-              <Box width={16}>
-                <Text dimColor={true}>{formatTokens(autocompactCategory.tokens)}</Text>
-              </Box>
-              <Box width={10}>
-                <Text dimColor={true}>
-                  {((autocompactCategory.tokens / rawMaxTokens) * 100).toFixed(1)}%
-                </Text>
-              </Box>
-              <Box flexGrow={1}>
-                <Text color="warning">
-                  {'╌'.repeat(Math.max(1, Math.round((autocompactCategory.tokens / rawMaxTokens) * 20)))}
-                </Text>
-              </Box>
             </Box>
           )}
 
-          {/* Free Space */}
-          <Box flexDirection="row" justifyContent="space-between" width="100%">
-            <Box width={24}>
-              <Text dimColor={true}>○ Free space</Text>
-            </Box>
-            <Box width={16}>
-              <Text dimColor={true}>{formatTokens(freeTokens)}</Text>
-            </Box>
-            <Box width={10}>
-              <Text dimColor={true}>{freePercent}%</Text>
-            </Box>
-            <Box flexGrow={1}>
-              <Text dimColor={true}>
-                {'┄'.repeat(Math.max(1, Math.min(20, Math.round((freeTokens / rawMaxTokens) * 20))))}
-              </Text>
-            </Box>
+          <CollapseStatus />
+
+          <Box marginTop={1} marginBottom={0}>
+            <Text dimColor={true} italic={true}>
+              Estimated usage by category
+            </Text>
           </Box>
+
+          {legendItems.map((item, index) => {
+            const label = `${item.name}:`.padEnd(maxLabelLen, ' ');
+            const tokenDisplay = formatTokens(item.tokens).padStart(maxTokensLen, ' ');
+            const percentDisplay = item.isDeferred
+              ? '   N/A'
+              : `${((item.tokens / rawMaxTokens) * 100).toFixed(1)}%`.padStart(6, ' ');
+            return (
+              <Box key={index} flexDirection="row">
+                <Text color={item.color} dimColor={item.isDim}>
+                  {item.symbol}
+                </Text>
+                <Text dimColor={item.isDim}> {label} </Text>
+                <Text bold={!item.isDim}>{tokenDisplay}</Text>
+                <Text dimColor={true}> tokens ({percentDisplay})</Text>
+              </Box>
+            );
+          })}
         </Box>
       </Box>
 
-      {/* MCP Tools Section */}
+      {/* MCP Tools */}
       {mcpTools.length > 0 && (
-        <Box
-          flexDirection="column"
-          marginTop={1}
-          borderStyle="round"
-          borderColor="inactive"
-          paddingX={2}
-          paddingY={1}
-        >
-          <Box flexDirection="row" justifyContent="space-between">
-            <Box>
-              <Text bold={true} color="magenta">
-                🔌 MCP Tools
-              </Text>
-              <Text dimColor={true}> · /mcp{hasDeferredMcpTools ? ' (on-demand)' : ''}</Text>
-            </Box>
+        <Box flexDirection="column" marginTop={1}>
+          <Box>
+            <Text bold={true}>MCP tools</Text>
             <Text dimColor={true}>
-              {mcpTools.length} {plural(mcpTools.length, 'tool')}
+              {' '}· /mcp{hasDeferredMcpTools ? ' (loaded on-demand)' : ''}
             </Text>
           </Box>
-          <Box flexDirection="column" marginTop={1}>
-            {mcpTools.map((tool, idx) => (
-              <Box key={idx} flexDirection="row" justifyContent="space-between">
-                <Box>
-                  <Text color={tool.isLoaded ? 'success' : 'inactive'}>
-                    {tool.isLoaded ? '● ' : '○ '}
-                  </Text>
-                  <Text>{tool.name}</Text>
-                </Box>
-                <Text dimColor={true}>{formatTokens(tool.tokens)} tokens</Text>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      )}
-
-      {/* Skills Section */}
-      {skills && skills.tokens > 0 && (
-        <Box
-          flexDirection="column"
-          marginTop={1}
-          borderStyle="round"
-          borderColor="inactive"
-          paddingX={2}
-          paddingY={1}
-        >
-          <Box flexDirection="row" justifyContent="space-between">
-            <Box>
-              <Text bold={true} color="claudeBlue">
-                ⚡ Skills
-              </Text>
-              <Text dimColor={true}> · /skills</Text>
-            </Box>
-            <Text dimColor={true}>{formatTokens(skills.tokens)} tokens</Text>
-          </Box>
-          <Box flexDirection="column" marginTop={1}>
-            {Array.from(groupBySource(skills.skillFrontmatter).entries()).map(
-              ([source, sourceSkills]) => (
-                <Box key={source} flexDirection="column" marginTop={1}>
-                  <Text dimColor={true} bold={true}>
-                    [{source}]
-                  </Text>
-                  {sourceSkills.map((skill, idx) => (
-                    <Box key={idx} flexDirection="row" justifyContent="space-between" paddingLeft={2}>
-                      <Text>• {skill.name}</Text>
-                      <Text dimColor={true}>{formatTokens(skill.tokens)} tokens</Text>
+          {hasDeferredMcpTools ? (
+            <>
+              {loadedMcpTools.length > 0 && (
+                <Box flexDirection="column" marginTop={0}>
+                  <Text dimColor={true}>Loaded</Text>
+                  {loadedMcpTools.map((tool, i) => (
+                    <Box key={i}>
+                      <Text>└ {tool.name}: </Text>
+                      <Text dimColor={true}>{formatTokens(tool.tokens)} tokens</Text>
                     </Box>
                   ))}
                 </Box>
-              ),
-            )}
-          </Box>
-        </Box>
-      )}
-
-      {/* Memory Files Section */}
-      {memoryFiles.length > 0 && (
-        <Box
-          flexDirection="column"
-          marginTop={1}
-          borderStyle="round"
-          borderColor="inactive"
-          paddingX={2}
-          paddingY={1}
-        >
-          <Box flexDirection="row" justifyContent="space-between">
-            <Box>
-              <Text bold={true} color="warning">
-                🧠 Memory Files
-              </Text>
-              <Text dimColor={true}> · /memory</Text>
+              )}
+              {deferredMcpTools.length > 0 && (
+                <Box flexDirection="column" marginTop={0}>
+                  <Text dimColor={true}>Available</Text>
+                  {deferredMcpTools.slice(0, 10).map((tool, i) => (
+                    <Box key={i}>
+                      <Text dimColor={true}>└ {tool.name}</Text>
+                    </Box>
+                  ))}
+                  {deferredMcpTools.length > 10 && (
+                    <Box>
+                      <Text dimColor={true}>
+                        └ ... and {deferredMcpTools.length - 10} more (run /mcp to view all)
+                      </Text>
+                    </Box>
+                  )}
+                </Box>
+              )}
+            </>
+          ) : (
+            <Box flexDirection="column" marginTop={0}>
+              {mcpTools.map((tool, i) => (
+                <Box key={i}>
+                  <Text>└ {tool.name}: </Text>
+                  <Text dimColor={true}>{formatTokens(tool.tokens)} tokens</Text>
+                </Box>
+              ))}
             </Box>
-            <Text dimColor={true}>
-              {memoryFiles.length} {plural(memoryFiles.length, 'file')}
-            </Text>
-          </Box>
-          <Box flexDirection="column" marginTop={1}>
-            {memoryFiles.map((file, idx) => (
-              <Box key={idx} flexDirection="row" justifyContent="space-between">
-                <Text>• {getDisplayPath(file.path)}</Text>
-                <Text dimColor={true}>{formatTokens(file.tokens)} tokens</Text>
-              </Box>
-            ))}
-          </Box>
+          )}
         </Box>
       )}
 
-      {/* Custom Agents Section */}
+      {/* Custom Agents */}
       {agents.length > 0 && (
-        <Box
-          flexDirection="column"
-          marginTop={1}
-          borderStyle="round"
-          borderColor="inactive"
-          paddingX={2}
-          paddingY={1}
-        >
-          <Box flexDirection="row" justifyContent="space-between">
-            <Box>
-              <Text bold={true} color="info">
-                🤖 Custom Agents
-              </Text>
-              <Text dimColor={true}> · /agents</Text>
-            </Box>
-            <Text dimColor={true}>
-              {agents.length} {plural(agents.length, 'agent')}
-            </Text>
+        <Box flexDirection="column" marginTop={1}>
+          <Box>
+            <Text bold={true}>Custom agents</Text>
+            <Text dimColor={true}> · /agents</Text>
           </Box>
-          <Box flexDirection="column" marginTop={1}>
-            {Array.from(groupBySource(agents).entries()).map(([source, sourceAgents]) => (
-              <Box key={source} flexDirection="column" marginTop={1}>
-                <Text dimColor={true} bold={true}>
-                  [{source}]
-                </Text>
-                {sourceAgents.map((agent, idx) => (
-                  <Box key={idx} flexDirection="row" justifyContent="space-between" paddingLeft={2}>
-                    <Text>• @{agent.agentType}</Text>
-                    <Text dimColor={true}>{formatTokens(agent.tokens)} tokens</Text>
+          {Array.from(groupBySource(agents).entries()).map(([source, sourceAgents]) => (
+            <Box key={source} flexDirection="column" marginTop={0}>
+              <Text dimColor={true}>[{source}]</Text>
+              {sourceAgents.map((agent, i) => (
+                <Box key={i}>
+                  <Text>└ @{agent.agentType}: </Text>
+                  <Text dimColor={true}>{formatTokens(agent.tokens)} tokens</Text>
+                </Box>
+              ))}
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Memory Files */}
+      {memoryFiles.length > 0 && (
+        <Box flexDirection="column" marginTop={1}>
+          <Box>
+            <Text bold={true}>Memory files</Text>
+            <Text dimColor={true}> · /memory</Text>
+          </Box>
+          {memoryFiles.map((file, i) => (
+            <Box key={i}>
+              <Text>└ {getDisplayPath(file.path)}: </Text>
+              <Text dimColor={true}>{formatTokens(file.tokens)} tokens</Text>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Skills */}
+      {skills && skills.tokens > 0 && (
+        <Box flexDirection="column" marginTop={1}>
+          <Box>
+            <Text bold={true}>Skills</Text>
+            <Text dimColor={true}> · /skills</Text>
+          </Box>
+          {Array.from(groupBySource(skills.skillFrontmatter).entries()).map(
+            ([source, sourceSkills]) => (
+              <Box key={source} flexDirection="column" marginTop={0}>
+                <Text dimColor={true}>[{source}]</Text>
+                {sourceSkills.map((skill, i) => (
+                  <Box key={i}>
+                    <Text>└ {skill.name}: </Text>
+                    <Text dimColor={true}>{formatTokens(skill.tokens)} tokens</Text>
                   </Box>
                 ))}
               </Box>
-            ))}
-          </Box>
+            ),
+          )}
         </Box>
       )}
 
-      {/* Optimization Suggestions Card */}
+      {/* Optimization Suggestions */}
       {suggestions.length > 0 && (
-        <Box
-          flexDirection="column"
-          marginTop={1}
-          borderStyle="round"
-          borderColor="warning"
-          paddingX={2}
-          paddingY={1}
-        >
+        <Box flexDirection="column" marginTop={1}>
           <ContextSuggestions suggestions={suggestions} />
         </Box>
       )}
