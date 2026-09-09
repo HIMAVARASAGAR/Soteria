@@ -114,7 +114,7 @@ describe('formatDescriptionWithSource', () => {
     expect(formatDescriptionWithSource(command)).toBe('Đánh giá pull request')
   })
 
-  test('falls back to English when an OpenClaude localization key is missing', () => {
+  test('falls back to English when an Soteria localization key is missing', () => {
     const command = {
       name: 'example',
       type: 'prompt',

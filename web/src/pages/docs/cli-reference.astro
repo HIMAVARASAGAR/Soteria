@@ -10,20 +10,20 @@ const toc = [
 ---
 
 <DocsLayout
-  title="openclaude CLI reference — flags & subcommands"
-  description="Full reference for the openclaude command line: every flag (model, I/O formats, sessions, permissions, MCP) and subcommands like mcp and ssh."
+  title="soteria CLI reference — flags & subcommands"
+  description="Full reference for the soteria command line: every flag (model, I/O formats, sessions, permissions, MCP) and subcommands like mcp and ssh."
   heading="CLI reference"
-  lede="Every documented flag of the openclaude binary, grouped by purpose. Slash commands you type inside a session are documented separately."
+  lede="Every documented flag of the soteria binary, grouped by purpose. Slash commands you type inside a session are documented separately."
   toc={toc}
 >
   <h2 id="usage">usage</h2>
-  <pre><code>openclaude [options] [prompt]
+  <pre><code>soteria [options] [prompt]
 
 # interactive session in the current repo
-openclaude
+soteria
 
 # non-interactive: print the result and exit
-openclaude -p "explain the build pipeline" --output-format json</code></pre>
+soteria -p "explain the build pipeline" --output-format json</code></pre>
   <p>
     Looking for <code>/commands</code> you type inside the session? See the
     <a href="/docs/slash-commands/">slash commands reference</a>.

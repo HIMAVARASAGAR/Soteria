@@ -376,7 +376,7 @@ describe('/lsp recommend', () => {
   })
 
   test('falls back to filesystem scanning when git cannot enumerate workspace files', async () => {
-    const tempDir = await mkdtemp(join(tmpdir(), 'openclaude-lsp-'))
+    const tempDir = await mkdtemp(join(tmpdir(), 'soteria-lsp-'))
     try {
       await mkdir(join(tempDir, 'src'), { recursive: true })
       await writeFile(join(tempDir, 'src', 'main.ts'), 'export const x = 1\n')

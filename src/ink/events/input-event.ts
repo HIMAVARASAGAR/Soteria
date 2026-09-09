@@ -22,10 +22,13 @@ export type Key = {
   delete: boolean
   meta: boolean
   super: boolean
+  insert?: boolean
+  name?: string
 }
 
 function parseKey(keypress: ParsedKey): [Key, string] {
   const key: Key = {
+    name: keypress.name,
     upArrow: keypress.name === 'up',
     downArrow: keypress.name === 'down',
     leftArrow: keypress.name === 'left',
@@ -38,6 +41,7 @@ function parseKey(keypress: ParsedKey): [Key, string] {
     end: keypress.name === 'end',
     return: keypress.name === 'return',
     escape: keypress.name === 'escape',
+    insert: keypress.name === 'insert',
     fn: keypress.fn,
     ctrl: keypress.ctrl,
     shift: keypress.shift,

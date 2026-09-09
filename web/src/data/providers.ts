@@ -17,13 +17,6 @@ export const providers: Provider[] = [
     notes: 'Works with OpenAI, OpenRouter, DeepSeek, Groq, Mistral, LM Studio, and any other compatible /v1 server.',
   },
   {
-    id: 'opengateway',
-    name: 'Gitlawb Opengateway',
-    setup: 'startup default, /provider, or env vars',
-    envVars: ['OPENAI_API_KEY', 'OPENAI_MODEL'],
-    notes: 'Smart gateway at https://opengateway.gitlawb.com/v1. Requires an API key from gitlawb.com/opengateway/keys; routes Xiaomi MiMo and GMI Cloud partner models by model name.',
-  },
-  {
     id: 'gemini',
     name: 'Google Gemini',
     setup: '/provider or env vars',

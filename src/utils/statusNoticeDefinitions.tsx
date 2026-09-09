@@ -120,7 +120,7 @@ const apiKeyConflictNotice: StatusNoticeDefinition = {
     return <WarningNoticeRow marginTop={1}>
         <Text color="warning">
           Auth conflict: Using {apiKeySource} instead of Anthropic Console key.
-          Either unset {apiKeySource}, or run `openclaude /logout`.
+          Either unset {apiKeySource}, or run `soteria /logout`.
         </Text>
       </WarningNoticeRow>;
   }

@@ -11,6 +11,7 @@ import { getEffortSuffix } from '../../utils/effort.js';
 import { truncate } from '../../utils/format.js';
 import { formatModelAndBilling, getLogoDisplayData, truncatePath } from '../../utils/logoV2Utils.js';
 import { renderModelSetting } from '../../utils/model/model.js';
+import { isModelConfigured } from '../../utils/providerWelcome.js';
 import { OffscreenFreeze } from '../OffscreenFreeze.js';
 import { GuestPassesUpsell, incrementGuestPassesSeenCount, useShowGuestPassesUpsell } from './GuestPassesUpsell.js';
 import { incrementOverageCreditUpsellSeenCount, OverageCreditUpsell, useShowOverageCreditUpsell } from './OverageCreditUpsell.js';
@@ -22,7 +23,8 @@ export function CondensedLogo() {
   const agent = useAppState(_temp);
   const effortValue = useAppState(_temp2);
   const model = useMainLoopModel();
-  const modelDisplayName = renderModelSetting(model);
+  const configured = isModelConfigured();
+  const modelDisplayName = configured ? renderModelSetting(model) : 'No model selected';
   const {
     version,
     cwd,

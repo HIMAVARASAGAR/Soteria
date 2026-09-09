@@ -138,9 +138,13 @@ export function KeybindingSetup({
   // Chord state management - use ref for immediate access, state for re-renders
   // The ref is used by resolve() to get the current value without waiting for re-render
   // The state is used to trigger re-renders when needed (e.g., for UI updates)
+  // Chord state management - use ref for immediate access, state for re-renders
+  // The ref is used by resolve() to get the current value without waiting for re-render
+  // The state is used to trigger re-renders when needed (e.g., for UI updates)
   const pendingChordRef = useRef<ParsedKeystroke[] | null>(null);
   const [pendingChord, setPendingChordState] = useState<ParsedKeystroke[] | null>(null);
   const chordTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fallbackActionRef = useRef<string | null>(null);
 
   // Handler registry for action callbacks (used by ChordInterceptor to invoke handlers)
   const handlerRegistryRef = useRef(new Map<string, Set<{
@@ -169,14 +173,32 @@ export function KeybindingSetup({
   }, []);
 
   // Wrapper for setPendingChord that manages timeout and syncs ref+state
-  const setPendingChord = useCallback((pending: ParsedKeystroke[] | null) => {
+  const setPendingChord = useCallback((pending: ParsedKeystroke[] | null, fallbackAction?: string | null) => {
     clearChordTimeout();
+    fallbackActionRef.current = fallbackAction ?? null;
     if (pending !== null) {
       // Set timeout to cancel chord if not completed
       chordTimeoutRef.current = setTimeout((pendingChordRef_0, setPendingChordState_0) => {
         logForDebugging('[keybindings] Chord timeout - cancelling');
+        const fallback = fallbackActionRef.current;
         pendingChordRef_0.current = null;
         setPendingChordState_0(null);
+        fallbackActionRef.current = null;
+        if (fallback) {
+          const registry = handlerRegistryRef.current;
+          if (registry) {
+            const handlers = registry.get(fallback);
+            if (handlers && handlers.size > 0) {
+              const contextsSet = new Set([...activeContextsRef.current, 'Global', 'Chat']);
+              for (const registration of handlers) {
+                if (contextsSet.has(registration.context)) {
+                  registration.handler();
+                  break;
+                }
+              }
+            }
+          }
+        }
       }, CHORD_TIMEOUT_MS, pendingChordRef, setPendingChordState);
     }
 
@@ -253,7 +275,26 @@ function ChordInterceptor(t0) {
       bb23: switch (result.type) {
         case "chord_started":
           {
-            setPendingChord(result.pending);
+            if (result.fallbackAction && registry) {
+              const handlers = registry.get(result.fallbackAction);
+              if (handlers && handlers.size > 0) {
+                const contextsSet = new Set(contexts);
+                let executed = false;
+                for (const reg of handlers) {
+                  if (contextsSet.has(reg.context)) {
+                    setPendingChord(null);
+                    reg.handler();
+                    event.stopImmediatePropagation();
+                    executed = true;
+                    break;
+                  }
+                }
+                if (executed) {
+                  break bb23;
+                }
+              }
+            }
+            setPendingChord(result.pending, result.fallbackAction);
             event.stopImmediatePropagation();
             break bb23;
           }

@@ -892,10 +892,10 @@ function shouldRetry(error: APIError): boolean {
 }
 
 export function getDefaultMaxRetries(): number {
-  const openClaudeMaxRetries = process.env.OPENCLAUDE_MAX_RETRIES
+  const openClaudeMaxRetries = process.env.SOTERIA_MAX_RETRIES
   if (openClaudeMaxRetries) {
     return validateRetryAttemptsEnvVar(
-      'OPENCLAUDE_MAX_RETRIES',
+      'SOTERIA_MAX_RETRIES',
       openClaudeMaxRetries,
     )
   }
@@ -903,7 +903,7 @@ export function getDefaultMaxRetries(): number {
   const legacyMaxRetries = process.env.CLAUDE_CODE_MAX_RETRIES
   if (legacyMaxRetries) {
     logForDebugging(
-      'CLAUDE_CODE_MAX_RETRIES is deprecated; use OPENCLAUDE_MAX_RETRIES instead',
+      'CLAUDE_CODE_MAX_RETRIES is deprecated; use SOTERIA_MAX_RETRIES instead',
     )
     return validateRetryAttemptsEnvVar(
       'CLAUDE_CODE_MAX_RETRIES',
@@ -916,8 +916,8 @@ export function getDefaultMaxRetries(): number {
 
 export function getDefaultRetryDelayMs(): number {
   return validateBoundedIntEnvVar(
-    'OPENCLAUDE_RETRY_DELAY_MS',
-    process.env.OPENCLAUDE_RETRY_DELAY_MS,
+    'SOTERIA_RETRY_DELAY_MS',
+    process.env.SOTERIA_RETRY_DELAY_MS,
     DEFAULT_RETRY_DELAY_MS,
     MAX_RETRY_DELAY_BASE_MS,
   ).effective

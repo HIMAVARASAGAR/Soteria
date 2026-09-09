@@ -38,12 +38,12 @@ export const CLAUDE_CONFIG_DIRECTORIES = [
 
 export type ClaudeConfigDirectory = (typeof CLAUDE_CONFIG_DIRECTORIES)[number]
 
-const PROJECT_CONFIG_DIR_NAMES = ['.claude', '.openclaude'] as const
+const PROJECT_CONFIG_DIR_NAMES = ['.claude', '.soteria'] as const
 
 // Concurrency cap for parallel readFile + parseFrontmatter when loading
 // commands/agents/skills/etc. With unbounded Promise.all, a directory holding
 // thousands of markdown files (e.g., an Obsidian vault symlinked into
-// ~/.openclaude/agents — see issue #769) opens that many fds and blocks the
+// ~/.soteria/agents — see issue #769) opens that many fds and blocks the
 // event loop on parse work, freezing the REPL at startup. Batching keeps fd
 // pressure and CPU bursts bounded.
 const MARKDOWN_LOAD_BATCH_SIZE = 32
@@ -92,7 +92,7 @@ function recordOversizedSkip(skip: OversizedMarkdownSkip): void {
   if (!oversizedSkipStderrWarned) {
     oversizedSkipStderrWarned = true
     process.stderr.write(
-      `openclaude: skipping oversized markdown config file ${skip.filePath} ` +
+      `soteria: skipping oversized markdown config file ${skip.filePath} ` +
         `(${skip.sizeBytes} bytes > ${skip.maxBytes} max). Set ` +
         `CLAUDE_CODE_MAX_MARKDOWN_FILE_SIZE_BYTES to raise the cap.\n`,
     )

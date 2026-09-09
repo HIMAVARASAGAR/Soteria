@@ -67,7 +67,7 @@ function clearProviderEnv(): void {
 beforeEach(async () => {
   await acquireSharedMutationLock('discoveryService.test.ts')
   mock.restore()
-  tempDir = mkdtempSync(join(tmpdir(), 'openclaude-discovery-service-test-'))
+  tempDir = mkdtempSync(join(tmpdir(), 'soteria-discovery-service-test-'))
   process.env.CLAUDE_CONFIG_DIR = tempDir
   delete process.env.OPENROUTER_API_KEY
   clearProviderEnv()
@@ -265,7 +265,7 @@ describe('discoverModelsForRoute', () => {
         kind: 'openai-compatible',
         openaiShim: {
           headers: {
-            'X-Static-Client': 'openclaude',
+            'X-Static-Client': 'soteria',
           },
         },
       },

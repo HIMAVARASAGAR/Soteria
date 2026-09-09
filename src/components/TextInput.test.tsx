@@ -7,6 +7,7 @@ import { stripVTControlCharacters as stripAnsi } from 'node:util'
 import { createRoot } from '../ink.js'
 import { AppStateProvider } from '../state/AppState.js'
 import { maskTextWithVisibleEdges } from '../utils/Cursor.js'
+import { readClipboard, setClipboard } from '../ink/termio/osc.js'
 import TextInput from './TextInput.js'
 import VimTextInput from './VimTextInput.js'
 
@@ -377,3 +378,109 @@ test('VimTextInput preserves rapid typed characters before delayed parent value 
   expect(output).toContain('asdf')
   expect(output).not.toContain('Type here...')
 })
+
+test('clipboard read and write roundtrip', async () => {
+  const testKey = 'sk-ant-api03-test-token-12345'
+  await setClipboard(testKey)
+  await Bun.sleep(100)
+  const read = await readClipboard()
+  expect(read.trim()).toBe(testKey)
+})
+
+test('TextInput pastes clipboard text when Ctrl+V is pressed', async () => {
+  await setClipboard('pasted-api-key-xyz')
+  await Bun.sleep(100)
+
+  const { stdout, stdin, getOutput } = createTestStreams()
+  const root = await createRoot({
+    stdout: stdout as unknown as NodeJS.WriteStream,
+    stdin: stdin as unknown as NodeJS.ReadStream,
+    patchConsole: false,
+  })
+
+  function TestInput() {
+    const [val, setVal] = React.useState('')
+    return (
+      <AppStateProvider>
+        <TextInput
+          value={val}
+          onChange={setVal}
+          onSubmit={() => {}}
+          columns={60}
+          cursorOffset={val.length}
+          onChangeCursorOffset={() => {}}
+          focus
+          showCursor
+        />
+      </AppStateProvider>
+    )
+  }
+
+  root.render(<TestInput />)
+  await Bun.sleep(50)
+
+  // Send Ctrl+V (\x16)
+  stdin.write('\x16')
+
+  const output = await waitForOutput(
+    getOutput,
+    frame => frame.includes('pasted-api-key-xyz'),
+  )
+
+  root.unmount()
+  stdin.end()
+  stdout.end()
+
+  expect(output).toContain('pasted-api-key-xyz')
+})
+
+test('TextInput pastes clipboard text when Shift+Insert is pressed and strips newlines for single-line inputs', async () => {
+  await setClipboard('  sk-test-with-newlines-and-spaces  \r\n\r\n')
+  await Bun.sleep(100)
+
+  const { stdout, stdin, getOutput } = createTestStreams()
+  const root = await createRoot({
+    stdout: stdout as unknown as NodeJS.WriteStream,
+    stdin: stdin as unknown as NodeJS.ReadStream,
+    patchConsole: false,
+  })
+
+  function TestInput() {
+    const [val, setVal] = React.useState('')
+    return (
+      <AppStateProvider>
+        <TextInput
+          value={val}
+          onChange={setVal}
+          onSubmit={() => {}}
+          columns={60}
+          cursorOffset={val.length}
+          onChangeCursorOffset={() => {}}
+          focus
+          showCursor
+          multiline={false}
+        />
+      </AppStateProvider>
+    )
+  }
+
+  root.render(<TestInput />)
+  await Bun.sleep(50)
+
+  // Send Shift+Insert escape sequence \x1b[2;2~
+  stdin.write('\x1b[2;2~')
+
+  const output = await waitForOutput(
+    getOutput,
+    frame => frame.includes('sk-test-with-newlines-and-spaces'),
+  )
+
+  root.unmount()
+  stdin.end()
+  stdout.end()
+
+  expect(output).toContain('sk-test-with-newlines-and-spaces')
+  expect(output).not.toContain('\n')
+})
+
+

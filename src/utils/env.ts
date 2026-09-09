@@ -25,7 +25,7 @@ export function resolveGlobalClaudeFile(options: {
   const oauthSuffix = options.oauthSuffix ?? ''
   const configDir = options.configDirEnv || options.homeDir || homedir()
   const hasExplicitConfigDir = Boolean(options.configDirEnv)
-  const newFilename = `.openclaude${oauthSuffix}.json`
+  const newFilename = `.soteria${oauthSuffix}.json`
   const legacyFilename = `.claude${oauthSuffix}.json`
 
   if (
@@ -58,7 +58,7 @@ export const getGlobalClaudeFile = memoize((): string => {
     migrationSucceeded = migrateLegacyClaudeConfigHome({ homeDir: configDir })
   }
 
-  // Default installs hard-cut to .openclaude.json after the migration above.
+  // Default installs hard-cut to .soteria.json after the migration above.
   // Explicit CLAUDE_CONFIG_DIR users keep the legacy filename fallback because
   // that env var is the opt-out for automatic migration.
   return resolveGlobalClaudeFile({

@@ -211,7 +211,7 @@ export function Doctor(t0: Props) {
   let t7;
   if ($[11] !== onDone) {
     t7 = () => {
-      onDone("OpenClaude diagnostics dismissed", {
+      onDone("Soteria diagnostics dismissed", {
         display: "system"
       });
     };

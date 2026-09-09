@@ -137,7 +137,7 @@ export function isFullscreenEnvEnabled(): boolean {
   // `/config` without having to set an env var.
   const configValue = getGlobalConfig().flickerFreeMode
   if (configValue !== undefined) return configValue
-  return false
+  return Boolean(process.stdout?.isTTY) && !isEnvTruthy(process.env.CI)
 }
 
 /**

@@ -29,7 +29,7 @@ beforeEach(async () => {
   // realpathSync so the temp path matches what the settings loader stores:
   // on macOS tmpdir() lives under /tmp, a symlink to /private/tmp, and the
   // loader canonicalises the --settings path, which would otherwise mismatch.
-  tempDir = realpathSync(mkdtempSync(join(tmpdir(), 'openclaude-flag-settings-')))
+  tempDir = realpathSync(mkdtempSync(join(tmpdir(), 'soteria-flag-settings-')))
   resetSettingsBootstrapState()
   setAllowedSettingSources(['flagSettings'])
 })

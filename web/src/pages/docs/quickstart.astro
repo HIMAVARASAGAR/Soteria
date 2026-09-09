@@ -12,8 +12,8 @@ const toc = [
 ---
 
 <DocsLayout
-  title="openclaude quickstart — first session in 5 minutes"
-  description="Run your first openclaude session: start the agent in a repo, pick a model provider, give it a task, and review the diff. From install to working agent in minutes."
+  title="soteria quickstart — first session in 5 minutes"
+  description="Run your first soteria session: start the agent in a repo, pick a model provider, give it a task, and review the diff. From install to working agent in minutes."
   heading="quickstart"
   lede="From a fresh install to a reviewed diff in about five minutes."
   toc={toc}
@@ -21,7 +21,7 @@ const toc = [
   <h2 id="start">1. start the agent</h2>
   <p>Run it inside any repository (or empty directory):</p>
   <pre><code>cd your-repo
-openclaude</code></pre>
+soteria</code></pre>
   <p>
     If you haven't <a href="/docs/installation/">installed it</a> yet:
     <code>{SITE.installCommand}</code>
@@ -38,7 +38,7 @@ openclaude</code></pre>
 export OPENAI_API_KEY=sk-your-key-here
 export OPENAI_MODEL=gpt-4o
 
-openclaude</code></pre>
+soteria</code></pre>
   <p>For GitHub Models, run <code>/onboard-github</code> for interactive OAuth onboarding.</p>
 
   <h2 id="first-task">3. give it a task</h2>
@@ -61,7 +61,7 @@ openclaude</code></pre>
   <h2 id="next-steps">next steps</h2>
   <ul>
     <li>Browse the <a href="/docs/slash-commands/">slash command reference</a> — sessions, context, review, and more.</li>
-    <li>Script it: <code>openclaude -p "explain this repo"</code> — see the <a href="/docs/cli-reference/">CLI reference</a>.</li>
+    <li>Script it: <code>soteria -p "explain this repo"</code> — see the <a href="/docs/cli-reference/">CLI reference</a>.</li>
     <li>Make it yours: <a href="/docs/configuration/">configuration</a> and <a href="/docs/keybindings/">keybindings</a>.</li>
   </ul>
 </DocsLayout>

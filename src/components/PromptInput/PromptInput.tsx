@@ -35,6 +35,7 @@ import { useTypeahead } from '../../hooks/useTypeahead.js';
 import type { BorderTextOptions } from '../../ink/render-border.js';
 import { stringWidth } from '../../ink/stringWidth.js';
 import { Box, type ClickEvent, type Key, Text, useInput } from '../../ink.js';
+import { readClipboard } from '../../ink/termio/osc.js';
 import { useOptionalKeybindingContext } from '../../keybindings/KeybindingContext.js';
 import { getShortcutDisplay } from '../../keybindings/shortcutFormat.js';
 import { useKeybinding, useKeybindings } from '../../keybindings/useKeybinding.js';
@@ -773,7 +774,7 @@ function PromptInput({
     if (feature('ULTRAPLAN') && ultraplanTriggers.length) {
       addNotification({
         key: 'ultraplan-active',
-        text: 'This prompt will launch an ultraplan session in OpenClaude on the web',
+        text: 'This prompt will launch an ultraplan session in Soteria on the web',
         priority: 'immediate',
         timeoutMs: 5000
       });
@@ -1688,23 +1689,28 @@ function PromptInput({
     }
   }, [previousModeBeforeAuto, toolPermissionContext, setAppState, setToolPermissionContext]);
 
-  // Handler for chat:imagePaste - paste image from clipboard
+  // Handler for chat:imagePaste - paste image from clipboard, falling back to text paste
   const handleImagePaste = useCallback(() => {
-    void getImageFromClipboard().then(imageData => {
+    void getImageFromClipboard().then(async imageData => {
       if (imageData) {
         onImagePaste(imageData.base64, imageData.mediaType);
-      } else {
-        const shortcutDisplay = getShortcutDisplay('chat:imagePaste', 'Chat', 'ctrl+v');
-        const message = env.isSSH() ? "No image found in clipboard. You're SSH'd; try scp?" : `No image found in clipboard. Use ${shortcutDisplay} to paste images.`;
-        addNotification({
-          key: 'no-image-in-clipboard',
-          text: message,
-          priority: 'immediate',
-          timeoutMs: 1000
-        });
+        return;
       }
+      const text = await readClipboard();
+      if (text) {
+        onTextPaste(text);
+        return;
+      }
+      const shortcutDisplay = getShortcutDisplay('chat:imagePaste', 'Chat', 'ctrl+v');
+      const message = env.isSSH() ? "No image found in clipboard. You're SSH'd; try scp?" : `No image found in clipboard. Use ${shortcutDisplay} to paste images.`;
+      addNotification({
+        key: 'no-image-in-clipboard',
+        text: message,
+        priority: 'immediate',
+        timeoutMs: 1000
+      });
     });
-  }, [addNotification, onImagePaste]);
+  }, [addNotification, onImagePaste, onTextPaste]);
 
   // Register chat:submit handler directly in the handler registry (not via
   // useKeybindings) so that only the ChordInterceptor can invoke it for chord

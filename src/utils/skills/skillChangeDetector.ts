@@ -204,7 +204,7 @@ async function getWatchablePaths(): Promise<string[]> {
   const fs = dependencies.getFsImplementation()
   const paths: string[] = []
 
-  // User skills directory (~/.openclaude/skills)
+  // User skills directory (~/.soteria/skills)
   const userSkillsPath = dependencies.getSkillsPath('userSettings', 'skills')
   if (userSkillsPath) {
     try {
@@ -215,7 +215,7 @@ async function getWatchablePaths(): Promise<string[]> {
     }
   }
 
-  // User commands directory (~/.openclaude/commands)
+  // User commands directory (~/.soteria/commands)
   const userCommandsPath = dependencies.getSkillsPath(
     'userSettings',
     'commands',

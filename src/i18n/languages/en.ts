@@ -24,7 +24,7 @@ export const en = {
     'Show the total cost and duration of the current session',
   'commands.diff.description': 'View uncommitted changes and per-turn diffs',
   'commands.doctor.description':
-    'Diagnose and verify your OpenClaude installation and settings',
+    'Diagnose and verify your Soteria installation and settings',
   'commands.dream.description':
     'Run memory consolidation — synthesize recent sessions into durable memories',
   'commands.effort.description': 'Set effort level for model usage',
@@ -38,7 +38,7 @@ export const en = {
   'commands.init.description':
     'Initialize a new project instruction file with codebase documentation',
   'commands.insights.description':
-    'Generate a report analyzing your OpenClaude sessions',
+    'Generate a report analyzing your Soteria sessions',
   'commands.install-github-app.description':
     'Set up Claude GitHub Actions for a repository',
   'commands.knowledge.description': 'Manage native Knowledge Graph',
@@ -56,7 +56,7 @@ export const en = {
     'Manage allow & deny tool permission rules',
   'commands.plan.description':
     'Enable plan mode or view the current session plan',
-  'commands.plugin.description': 'Manage OpenClaude plugins',
+  'commands.plugin.description': 'Manage Soteria plugins',
   'commands.provider.description': 'Manage API provider profiles',
   'commands.pr-comments.description':
     'Get comments from a GitHub pull request',
@@ -74,11 +74,11 @@ export const en = {
     'Complete a security review of the pending changes on the current branch',
   'commands.skills.description': 'List available skills',
   'commands.stats.description':
-    'Show your OpenClaude usage statistics and activity',
+    'Show your Soteria usage statistics and activity',
   'commands.status.description':
-    'Show OpenClaude status including version, model, account, API connectivity, and tool statuses',
-  'commands.statusline.description': "Set up OpenClaude's status line UI",
-  'commands.stickers.description': 'Order OpenClaude stickers',
+    'Show Soteria status including version, model, account, API connectivity, and tool statuses',
+  'commands.statusline.description': "Set up Soteria's status line UI",
+  'commands.stickers.description': 'Order Soteria stickers',
   'commands.tasks.description': 'List and manage background tasks',
   'commands.terminal-setup.description':
     'Install Shift+Enter key binding for newlines',
@@ -86,7 +86,7 @@ export const en = {
   'commands.usage.description': 'Show plan usage limits',
   'commands.vim.description': 'Toggle between Vim and Normal editing modes',
   'commands.wiki.description':
-    'Initialize and inspect the OpenClaude project wiki',
+    'Initialize and inspect the Soteria project wiki',
   'skills.batch.description':
     'Research and plan a large-scale change, then execute it in parallel across 5–30 isolated worktree agents that each open a PR.',
   'skills.batch.whenToUse':

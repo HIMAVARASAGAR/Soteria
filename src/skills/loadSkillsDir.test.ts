@@ -22,7 +22,7 @@ function writeSkill(rootDir: string, skillPath: string): void {
 
 test('loads flat and nested skills with colon namespaces', async () => {
   await acquireSharedMutationLock('loadSkillsDir.test.ts')
-  const configDir = mkdtempSync(join(tmpdir(), 'openclaude-skills-'))
+  const configDir = mkdtempSync(join(tmpdir(), 'soteria-skills-'))
   const cwd = join(configDir, 'workspace')
   const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
 

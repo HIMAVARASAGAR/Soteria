@@ -42,6 +42,7 @@ export default defineGateway({
           apiName: model.id,
           label: model.id,
           ...(model.context_window ? { contextWindow: model.context_window } : {}),
+          maxOutputTokens: 16_384,
         }
       },
     },
@@ -49,7 +50,7 @@ export default defineGateway({
     discoveryRefreshMode: 'background-if-stale',
     allowManualRefresh: true,
     models: [
-      { id: 'groq-llama-3.3-70b', apiName: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B', modelDescriptorId: 'llama-3.3-70b-versatile' },
+      { id: 'groq-llama-3.3-70b', apiName: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B', modelDescriptorId: 'llama-3.3-70b-versatile', maxOutputTokens: 16_384 },
     ],
   },
   usage: { supported: false },

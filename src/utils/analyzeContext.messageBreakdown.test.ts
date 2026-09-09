@@ -16,7 +16,7 @@ describe('approximateMessageTokens', () => {
   test('counts inline user image blocks as attachments/media', async () => {
     await acquireSharedMutationLock('analyzeContext.messageBreakdown.test.ts')
     const originalFixtureRoot = process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
-    const fixtureRoot = await mkdtemp(join(tmpdir(), 'openclaude-vcr-'))
+    const fixtureRoot = await mkdtemp(join(tmpdir(), 'soteria-vcr-'))
     process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = fixtureRoot
 
     try {
@@ -59,7 +59,7 @@ describe('approximateMessageTokens', () => {
   test('uses local message estimates when provider token counters are unavailable', async () => {
     await acquireSharedMutationLock('analyzeContext.messageBreakdown.test.ts')
     const originalFixtureRoot = process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
-    const fixtureRoot = await mkdtemp(join(tmpdir(), 'openclaude-vcr-'))
+    const fixtureRoot = await mkdtemp(join(tmpdir(), 'soteria-vcr-'))
     process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = fixtureRoot
 
     try {
@@ -102,7 +102,7 @@ describe('approximateMessageTokens', () => {
   test('uses media-aware estimates instead of serialized base64 length', async () => {
     await acquireSharedMutationLock('analyzeContext.messageBreakdown.test.ts')
     const originalFixtureRoot = process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT
-    const fixtureRoot = await mkdtemp(join(tmpdir(), 'openclaude-vcr-'))
+    const fixtureRoot = await mkdtemp(join(tmpdir(), 'soteria-vcr-'))
     process.env.CLAUDE_CODE_TEST_FIXTURES_ROOT = fixtureRoot
 
     try {

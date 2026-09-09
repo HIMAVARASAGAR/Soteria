@@ -42,6 +42,7 @@ export function getKeyName(input: string, key: Key): string | null {
   if (key.wheelDown) return 'wheeldown'
   if (key.home) return 'home'
   if (key.end) return 'end'
+  if (key.name) return key.name.toLowerCase()
   if (input.length === 1) return input.toLowerCase()
   return null
 }

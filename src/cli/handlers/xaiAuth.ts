@@ -1,5 +1,5 @@
 /**
- * `openclaude auth xai ...` command handlers.
+ * `soteria auth xai ...` command handlers.
  *
  * `login`   — browser OAuth (loopback callback on 127.0.0.1:56121).
  * `device`  — device-code flow for SSH / headless hosts.
@@ -108,7 +108,7 @@ function listenForManualCode(onLine: (line: string) => void): () => void {
   // Record the paused state BEFORE we touch it. We only need to resume
   // stdin if it was paused, and we must only re-pause it on cleanup if
   // we were the ones who resumed it — otherwise a one-shot CLI process
-  // (`openclaude auth xai login`) stays alive after a successful
+  // (`soteria auth xai login`) stays alive after a successful
   // browser flow because the resumed stdin keeps the event loop busy,
   // and the user sees the command "hang" until they hit Ctrl+D.
   const wasPaused =

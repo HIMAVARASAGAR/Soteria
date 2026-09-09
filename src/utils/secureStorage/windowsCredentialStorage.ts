@@ -31,7 +31,7 @@ function getWindowsSecureStorageFilePath(): string {
 }
 
 function shouldUseLegacyPasswordVault(): boolean {
-  return process.env.OPENCLAUDE_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT === '1'
+  return process.env.SOTERIA_ENABLE_LEGACY_WINDOWS_PASSWORDVAULT === '1'
 }
 
 function runPowerShell(

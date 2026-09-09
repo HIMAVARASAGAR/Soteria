@@ -27,7 +27,7 @@ function defaultMessages(): unknown[] {
 }
 
 async function withExportTestCwd<T>(fn: (cwd: string) => Promise<T>): Promise<T> {
-  const cwd = await mkdtemp(join(tmpdir(), 'openclaude-export-test-'))
+  const cwd = await mkdtemp(join(tmpdir(), 'soteria-export-test-'))
   try {
     return await fn(cwd)
   } finally {

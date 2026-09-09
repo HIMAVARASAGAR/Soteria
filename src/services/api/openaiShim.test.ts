@@ -5196,7 +5196,7 @@ test('preserves valid tool_result and drops orphan tool_result', async () => {
             type: 'tool_use',
             id: 'valid_call_1',
             name: 'Search',
-            input: { query: 'openclaude' },
+            input: { query: 'soteria' },
           },
         ],
       },

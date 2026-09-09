@@ -3,8 +3,8 @@ import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import { coerce } from 'semver'
 
-export const OPENCLAUDE_RELEASES_URL =
-  'https://github.com/Gitlawb/openclaude/releases'
+export const SOTERIA_RELEASES_URL =
+  'https://github.com/HIMAVARASAGAR/Soteria/releases'
 
 export function normalizePublicVersion(version: string): string {
   const trimmedVersion = version.trim()
@@ -52,7 +52,7 @@ export const publicBuildVersion = normalizePublicVersion(
 )
 
 export function getReleaseTagUrl(version: string = publicBuildVersion): string {
-  return `${OPENCLAUDE_RELEASES_URL}/tag/v${normalizePublicVersion(version)}`
+  return `${SOTERIA_RELEASES_URL}/tag/v${normalizePublicVersion(version)}`
 }
 
 export function getPublicBuildVersion(): string {

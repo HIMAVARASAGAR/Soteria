@@ -51,7 +51,7 @@ let scrollHint: ScrollHint | null = null
 
 function shouldDisableScrollFastPath(): boolean {
   if (!process.env.TMUX) return false
-  if (process.env.OPENCLAUDE_KONSOLE_TMUX_FAST_SCROLL) return false
+  if (process.env.SOTERIA_KONSOLE_TMUX_FAST_SCROLL) return false
   return (
     process.env.TERM_PROGRAM === 'konsole' ||
     process.env.KONSOLE_VERSION !== undefined ||

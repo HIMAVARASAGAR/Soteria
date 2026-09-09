@@ -115,7 +115,7 @@ async function postToFirecrawl<T>(
         headers,
         body: JSON.stringify({
           ...body,
-          origin: 'openclaude',
+          origin: 'soteria',
         }),
         signal,
       })

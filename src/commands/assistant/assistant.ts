@@ -25,7 +25,7 @@ export function NewInstallWizard(props: NewInstallWizardProps): null {
 }
 
 export async function computeDefaultInstallDir(): Promise<string> {
-  return join(homedir(), '.openclaude', 'assistant')
+  return join(homedir(), '.soteria', 'assistant')
 }
 
 export default null

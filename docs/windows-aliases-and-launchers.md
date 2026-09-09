@@ -1,25 +1,25 @@
 # Windows aliases and launchers
 
-This page documents optional PowerShell helper functions for launching OpenClaude on Windows after a global npm install.
+This page documents optional PowerShell helper functions for launching Soteria on Windows after a global npm install.
 
 These helpers are designed for the installed package workflow:
 
 ~~~powershell
-npm install -g @gitlawb/openclaude
+npm install -g @himavarasagar/soteria
 ~~~
 
-The helpers use the installed `openclaude` CLI command. They do not require a source checkout and do not call source-only `bun run scripts/*.ts` entrypoints.
+The helpers use the installed `soteria` CLI command. They do not require a source checkout and do not call source-only `bun run scripts/*.ts` entrypoints.
 
 ## One-time setup
 
 Run this once in PowerShell:
 
 ~~~powershell
-$packageRoot = Join-Path (npm root -g) "@gitlawb/openclaude"
-$aliases = Join-Path $packageRoot "scripts\windows\openclaude-aliases.ps1"
+$packageRoot = Join-Path (npm root -g) "@himavarasagar/soteria"
+$aliases = Join-Path $packageRoot "scripts\windows\soteria-aliases.ps1"
 
 if (-not (Test-Path $aliases)) {
-  throw "Alias script not found at $aliases. Update or reinstall @gitlawb/openclaude."
+  throw "Alias script not found at $aliases. Update or reinstall @himavarasagar/soteria."
 }
 
 if (-not (Test-Path $PROFILE)) {
@@ -44,7 +44,7 @@ Open a new PowerShell window after setup, or dot-source the profile:
 
 ## Daily commands
 
-### Launch OpenClaude using the installed CLI
+### Launch Soteria using the installed CLI
 
 ~~~powershell
 oc
@@ -77,7 +77,7 @@ To use a different local model for that invocation:
 oc-local -Model "qwen2.5-coder:7b"
 ~~~
 
-The environment overrides are scoped to that single `openclaude` invocation. A later plain `oc` call returns to normal installed CLI behavior and saved-provider-profile behavior.
+The environment overrides are scoped to that single `soteria` invocation. A later plain `oc` call returns to normal installed CLI behavior and saved-provider-profile behavior.
 
 ### Launch with low-latency local defaults
 
@@ -99,7 +99,7 @@ Like `oc-local`, the environment overrides are scoped to that single invocation.
 oc-provider
 ~~~
 
-This opens the provider manager through the installed OpenClaude CLI.
+This opens the provider manager through the installed Soteria CLI.
 
 ### Check local Ollama state
 
@@ -143,7 +143,7 @@ oc-help
 
 | Command | Purpose |
 | --- | --- |
-| `oc` | Launch OpenClaude using the installed CLI and saved/default behavior |
+| `oc` | Launch Soteria using the installed CLI and saved/default behavior |
 | `oc-local` | Launch once with local Ollama/OpenAI-compatible environment hints |
 | `oc-fast` | Launch once with local Ollama/OpenAI-compatible low-latency hints |
 | `oc-provider` | Open the provider manager |

@@ -238,7 +238,7 @@ test('xai validation surfaces sign-in guidance when no credential source is set'
   })
   expect(error).not.toBeNull()
   expect(error!).toContain('XAI_API_KEY is required')
-  expect(error!).toContain('openclaude auth xai login')
+  expect(error!).toContain('soteria auth xai login')
 })
 
 test('xai validation accepts stored OAuth credentials even without an env marker', async () => {

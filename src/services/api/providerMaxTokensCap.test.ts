@@ -45,6 +45,11 @@ test('parses provider maximum output token errors for max_completion_tokens', ()
       'max_completion_tokens exceeds maximum completion tokens for this model: 16384',
     ),
   ).toBe(16_384)
+  expect(
+    parseProviderMaxTokensCap(
+      "'max_completion_tokens' must be less than or equal to '16384', the maximum value for 'max_completion_tokens' is less than the 'context_window' for this model",
+    ),
+  ).toBe(16_384)
 })
 
 test('does not parse malformed or unsafe provider caps', () => {

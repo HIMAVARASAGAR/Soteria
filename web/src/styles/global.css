@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════════════════════════════════════
-   openclaude — gitlawb-aligned design tokens
+   soteria — gitlawb-aligned design tokens
    Monochrome surface system driven by --surface-rgb (inverts under light
-   theme) + openclaude orange accent. Dark is the default theme.
+   theme) + soteria orange accent. Dark is the default theme.
    ════════════════════════════════════════════════════════════════════════ */
 
 * { box-sizing: border-box; }
@@ -14,7 +14,7 @@
   --foreground: #ffffff;
   --surface-rgb: 255, 255, 255;
 
-  /* openclaude accent */
+  /* soteria accent */
   --accent: #ff7a1a;
   --accent-strong: #ff8f3d;
   --accent-soft: rgba(255, 122, 26, 0.14);

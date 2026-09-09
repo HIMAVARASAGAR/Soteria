@@ -367,7 +367,8 @@ export function resolveModelRuntimeLimits(options: {
       externalMaxOutputTokens.exact ??
       catalogEntry?.maxOutputTokens ??
       externalMaxOutputTokens.prefix ??
-      modelDescriptor?.maxOutputTokens,
+      modelDescriptor?.maxOutputTokens ??
+      (routeId === 'groq' ? 16_384 : undefined),
   }
 }
 

@@ -17,7 +17,7 @@ export default defineGateway({
     kind: 'credential-env',
     // OPENGATEWAY_API_KEY first so users who set both don't get their generic
     // OpenAI key sent to opengateway by accident. OPENAI_API_KEY kept as a
-    // fallback because that's where existing openclaude configs already hold it.
+    // fallback because that's where existing soteria configs already hold it.
     credentialEnvVars: ['OPENGATEWAY_API_KEY', 'OPENAI_API_KEY'],
     missingCredentialMessage:
       'OPENGATEWAY_API_KEY is required to use Gitlawb Opengateway.\n' +

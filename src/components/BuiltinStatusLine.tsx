@@ -15,6 +15,7 @@ import { getGlobalConfig } from '../utils/config.js';
 import { calculateContextPercentages, getContextWindowForModel } from '../utils/context.js';
 import { isFullscreenEnvEnabled } from '../utils/fullscreen.js';
 import { getRuntimeMainLoopModel, renderModelName } from '../utils/model/model.js';
+import { isModelConfigured } from '../utils/providerWelcome.js';
 import type { Theme } from '../utils/theme.js';
 import { doesMostRecentAssistantMessageExceed200k, getCurrentUsage } from '../utils/tokens.js';
 
@@ -53,10 +54,12 @@ export type BuiltinStatusData = {
   } | null;
 };
 export function buildBuiltinStatusSegments(data: BuiltinStatusData): StatusSegment[] {
+  const isUnconfigured = data.modelName === 'no model selected';
   const segments: StatusSegment[] = [{
     key: 'model',
     priority: 0,
-    text: data.modelName
+    text: data.modelName,
+    color: isUnconfigured ? 'warning' : undefined
   }];
   if (data.contextUsedPercent !== null) {
     const pct = Math.round(data.contextUsedPercent);
@@ -143,9 +146,10 @@ function BuiltinStatusLineInner({
     });
     const contextWindowSize = getContextWindowForModel(runtimeModel, getSdkBetas());
     const contextPercentages = calculateContextPercentages(getCurrentUsage(msgs), contextWindowSize);
+    const configured = isModelConfigured();
     return {
-      modelName: renderModelName(runtimeModel),
-      contextUsedPercent: contextPercentages.used,
+      modelName: configured ? renderModelName(runtimeModel) : 'no model selected',
+      contextUsedPercent: configured ? contextPercentages.used : null,
       costUSD: getTotalCost()
     };
     // messagesRef is stable; lastAssistantMessageId is the messages-changed signal

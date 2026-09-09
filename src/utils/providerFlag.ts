@@ -5,11 +5,11 @@
  * that the rest of the codebase uses for provider detection.
  *
  * Usage:
- *   openclaude --provider openai --model gpt-4o
- *   openclaude --provider gemini --model gemini-2.0-flash
- *   openclaude --provider mistral --model ministral-3b-latest
- *   openclaude --provider ollama --model llama3.2
- *   openclaude --provider anthropic   (default, no-op)
+ *   soteria --provider openai --model gpt-4o
+ *   soteria --provider gemini --model gemini-2.0-flash
+ *   soteria --provider mistral --model ministral-3b-latest
+ *   soteria --provider ollama --model llama3.2
+ *   soteria --provider anthropic   (default, no-op)
  */
 
 import '../integrations/index.js'
@@ -206,7 +206,7 @@ function applyOpenAIBaseUrlDefault(provider: string, baseUrl?: string): void {
 /**
  * Apply --model (without --provider) to process.env for the current process only.
  *
- * Issue #808: `openclaude --model <name>` should work standalone so users can
+ * Issue #808: `soteria --model <name>` should work standalone so users can
  * override the session model without reconfiguring a profile or polluting the
  * shell with OPENAI_MODEL=... Must run before the startup banner so the
  * displayed model matches the flag, and before resolution paths that read the

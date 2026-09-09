@@ -3,7 +3,7 @@ import { acquireSharedMutationLock, releaseSharedMutationLock } from '../../test
 
 import { getLocalFastPathConfig } from './providerConfig.js'
 
-const ENV_VAR = 'OPENCLAUDE_LOCAL_FAST_PATH'
+const ENV_VAR = 'SOTERIA_LOCAL_FAST_PATH'
 const originalEnv = process.env[ENV_VAR]
 
 beforeEach(async () => {
@@ -56,14 +56,14 @@ describe('getLocalFastPathConfig — auto-detect from baseUrl', () => {
 })
 
 describe('getLocalFastPathConfig — explicit env override', () => {
-  test('OPENCLAUDE_LOCAL_FAST_PATH=1 forces on against a public host', () => {
+  test('SOTERIA_LOCAL_FAST_PATH=1 forces on against a public host', () => {
     process.env[ENV_VAR] = '1'
     const cfg = getLocalFastPathConfig('https://api.openai.com/v1')
     expect(cfg.enabled).toBe(true)
     expect(cfg.skipStableStringify).toBe(true)
   })
 
-  test('OPENCLAUDE_LOCAL_FAST_PATH=0 forces off against localhost', () => {
+  test('SOTERIA_LOCAL_FAST_PATH=0 forces off against localhost', () => {
     process.env[ENV_VAR] = '0'
     const cfg = getLocalFastPathConfig('http://localhost:11434/v1')
     expect(cfg.enabled).toBe(false)

@@ -73,8 +73,8 @@ const SAVED_ENV = {
     process.env.CLAUDE_CODE_MAX_OUTPUT_TOKENS,
   CLAUDE_AUTOCOMPACT_PCT_OVERRIDE:
     process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE,
-  OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS:
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS,
+  SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS:
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS,
   DISABLE_COMPACT: process.env.DISABLE_COMPACT,
   DISABLE_AUTO_COMPACT: process.env.DISABLE_AUTO_COMPACT,
 }
@@ -248,7 +248,7 @@ describe('getAutoCompactThreshold', () => {
 
 describe('getAutoCompactFailureCooldownMs', () => {
   test('uses valid positive integer override', async () => {
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = ' 5000 '
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = ' 5000 '
     const { getAutoCompactFailureCooldownMs } = await importAutoCompact()
 
     expect(getAutoCompactFailureCooldownMs()).toBe(5000)
@@ -260,42 +260,42 @@ describe('getAutoCompactFailureCooldownMs', () => {
       getAutoCompactFailureCooldownMs,
     } = await importAutoCompact()
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '5000ms'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '5000ms'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '-1'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '-1'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '1.5'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '1.5'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '1e3'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '1e3'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '0x10'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '0x10'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '0b10'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '0b10'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '+5'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '+5'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
 
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '5.0'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '5.0'
     expect(getAutoCompactFailureCooldownMs()).toBe(
       AUTOCOMPACT_FAILURE_COOLDOWN_MS,
     )
@@ -453,7 +453,7 @@ describe('resolveAutoCompactCircuitBreakerState', () => {
 describe('autoCompactIfNeeded circuit breaker', () => {
   beforeEach(() => {
     process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
-    process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '5000'
+    process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS = '5000'
   })
 
   test('trips after three non-user failures and records a retry time', async () => {

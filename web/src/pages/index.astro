@@ -52,7 +52,7 @@ const jsonLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'openclaude',
+    name: 'soteria',
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'macOS, Linux, Windows',
     softwareVersion: SITE.version,
@@ -60,7 +60,7 @@ const jsonLd = [
     downloadUrl: SITE.npmUrl,
     description: SITE.description,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    author: { '@type': 'Organization', name: 'GitLawb', url: SITE.gitlawb },
+    author: { '@type': 'Person', name: 'Himavarasagar', url: SITE.github },
   },
   {
     '@context': 'https://schema.org',
@@ -74,7 +74,7 @@ const jsonLd = [
 <BaseLayout title={SITE.title} description={SITE.description} jsonLd={jsonLd}>
   <section class="hero grid-bg" aria-labelledby="hero-heading">
     <div class="container hero-inner">
-      <p class="pill fade-up"><span class="dot" aria-hidden="true"></span>open source · gitlawb-aligned · model-neutral</p>
+      <p class="pill fade-up"><span class="dot" aria-hidden="true"></span>open source · secure · model-neutral</p>
       <h1 id="hero-heading" class="text-hero fade-up fade-up-1">
         runs anywhere.<br />uses anything.
       </h1>
@@ -99,8 +99,8 @@ const jsonLd = [
         <h2 id="demo-heading">an agent loop you can watch.</h2>
       </div>
       <Terminal>
-        <span class="ln"><span class="t-prompt">$</span> openclaude</span>
-        <span class="ln t-dim">openclaude v{SITE.version} · provider: ollama · model: qwen3-coder</span>
+        <span class="ln"><span class="t-prompt">$</span> soteria</span>
+        <span class="ln t-dim">soteria v{SITE.version} · provider: ollama · model: qwen3-coder</span>
         <span class="ln">&nbsp;</span>
         <span class="ln"><span class="t-prompt">&gt;</span> add retry with backoff to the fetch client</span>
         <span class="ln">&nbsp;</span>
@@ -173,7 +173,7 @@ const jsonLd = [
             <span class="step-num">02</span>
             <div>
               <strong>start</strong>
-              <p>run <code>openclaude</code> in any repo.</p>
+              <p>run <code>soteria</code> in any repo.</p>
             </div>
           </li>
           <li>

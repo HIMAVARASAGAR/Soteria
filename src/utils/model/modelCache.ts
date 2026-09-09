@@ -1,5 +1,5 @@
 /**
- * Model Caching for OpenClaude
+ * Model Caching for Soteria
  * 
  * Caches model lists to disk for faster startup and offline access.
  * Uses async fs operations to avoid blocking the event loop.
@@ -13,7 +13,7 @@ import { getAPIProvider } from './providers.js'
 
 const CACHE_VERSION = '1'
 const CACHE_TTL_HOURS = 24
-const CACHE_DIR_NAME = '.openclaude-model-cache'
+const CACHE_DIR_NAME = '.soteria-model-cache'
 
 interface ModelCache {
   version: string

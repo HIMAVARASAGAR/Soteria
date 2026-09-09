@@ -1,6 +1,6 @@
 /**
  * Regression tests for issue #402 — NODE_OPTIONS heap cap
- * Closes: Gitlawb/openclaude#402 — JavaScript heap OOM during large tasks
+ * Closes: HIMAVARASAGAR/Soteria#402 — JavaScript heap OOM during large tasks
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test'

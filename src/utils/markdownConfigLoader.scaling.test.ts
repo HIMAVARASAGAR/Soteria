@@ -40,8 +40,8 @@ function restore(key: keyof typeof SAVED_ENV): void {
 
 beforeEach(async () => {
   await acquireSharedMutationLock('markdownConfigLoader.scaling.test.ts')
-  tempDir = await mkdtemp(join(tmpdir(), 'openclaude-md-scaling-'))
-  process.env.CLAUDE_CONFIG_DIR = join(tempDir, '.openclaude')
+  tempDir = await mkdtemp(join(tmpdir(), 'soteria-md-scaling-'))
+  process.env.CLAUDE_CONFIG_DIR = join(tempDir, '.soteria')
   process.env.CLAUDE_CODE_USE_NATIVE_FILE_SEARCH = '1'
   delete process.env.CLAUDE_CODE_MAX_MARKDOWN_FILE_SIZE_BYTES
   loadMarkdownFilesForSubdir.cache.clear?.()

@@ -53,7 +53,7 @@ afterEach(() => {
 
 describe('JSONProvider', () => {
   it('reports save failure when the graph path cannot be written', () => {
-    const projectDir = mkdtempSync(join(tmpdir(), 'openclaude-json-provider-'))
+    const projectDir = mkdtempSync(join(tmpdir(), 'soteria-json-provider-'))
     tempDirs.push(projectDir)
     mkdirSync(join(projectDir, 'knowledge_graph.json'))
 
@@ -68,7 +68,7 @@ describe('JSONProvider', () => {
   })
 
   it('reports delete failure when the graph path is a directory', () => {
-    const projectDir = mkdtempSync(join(tmpdir(), 'openclaude-json-provider-'))
+    const projectDir = mkdtempSync(join(tmpdir(), 'soteria-json-provider-'))
     tempDirs.push(projectDir)
     mkdirSync(join(projectDir, 'knowledge_graph.json'))
 
@@ -77,7 +77,7 @@ describe('JSONProvider', () => {
   })
 
   it('reports delete success when the graph file is removed', () => {
-    const projectDir = mkdtempSync(join(tmpdir(), 'openclaude-json-provider-'))
+    const projectDir = mkdtempSync(join(tmpdir(), 'soteria-json-provider-'))
     tempDirs.push(projectDir)
     writeFileSync(join(projectDir, 'knowledge_graph.json'), '{}', 'utf8')
 

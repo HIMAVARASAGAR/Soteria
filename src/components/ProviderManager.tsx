@@ -527,13 +527,13 @@ function XaiOAuthSetup({
         xAI OAuth (Grok)
       </Text>
       <Text>
-        Sign in with your xAI account in the browser. OpenClaude will store
+        Sign in with your xAI account in the browser. Soteria will store
         the resulting OAuth credentials securely and switch this session to
         Grok when setup completes.
       </Text>
       <Text dimColor>
         The xAI consent screen may label the app "Grok Build" — that's
-        expected. OpenClaude uses xAI's shared OAuth client.
+        expected. Soteria uses xAI's shared OAuth client.
       </Text>
       {status.state === 'starting' ? (
         <Text dimColor>
@@ -672,7 +672,7 @@ function CodexOAuthSetup({
         Codex OAuth
       </Text>
       <Text>
-        Sign in with your ChatGPT account in the browser. OpenClaude will store
+        Sign in with your ChatGPT account in the browser. Soteria will store
         the resulting Codex credentials securely and switch this session to the
         new Codex login when setup completes.
       </Text>
@@ -1112,10 +1112,10 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
     }
 
     if (options.warnings.length > 0) {
-      return `${options.prefix}. OpenClaude switched to it for this session with warnings: ${formatWarningsForMessage(options.warnings)}`
+      return `${options.prefix}. Soteria switched to it for this session with warnings: ${formatWarningsForMessage(options.warnings)}`
     }
 
-    return `${options.prefix}. OpenClaude switched to it for this session.`
+    return `${options.prefix}. Soteria switched to it for this session.`
   }
 
   function buildXaiOAuthActivationMessage(options: {
@@ -1127,9 +1127,9 @@ export function ProviderManager({ mode, onDone }: Props): React.ReactNode {
       return `${options.prefix}. Saved for next startup. Warning: ${options.warnings.join('; ')}.`
     }
     if (options.warnings.length > 0) {
-      return `${options.prefix}. OpenClaude switched to it for this session with warnings: ${options.warnings.join('; ')}.`
+      return `${options.prefix}. Soteria switched to it for this session with warnings: ${options.warnings.join('; ')}.`
     }
-    return `${options.prefix}. OpenClaude switched to it for this session.`
+    return `${options.prefix}. Soteria switched to it for this session.`
   }
 
   async function activateXaiOAuthSession(options?: {

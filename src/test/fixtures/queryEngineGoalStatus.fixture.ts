@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const fixtureCwd = mkdtempSync(join(tmpdir(), 'openclaude-query-engine-goal-'))
+const fixtureCwd = mkdtempSync(join(tmpdir(), 'soteria-query-engine-goal-'))
 const originalMacro = (globalThis as Record<string, unknown>).MACRO
 const originalNodeEnv = process.env.NODE_ENV
 const originalAnthropicApiKey = process.env.ANTHROPIC_API_KEY

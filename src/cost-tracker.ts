@@ -271,9 +271,9 @@ function round(number: number, precision: number): number {
 // Env-gated verbose token usage log. Treated as a boolean regardless of
 // value specifics — any truthy-ish string switches it on. `verbose` is the
 // documented keyword but we accept `1`/`true` for ergonomic parity with
-// other OPENCLAUDE_* flags.
+// other SOTERIA_* flags.
 function shouldLogTokenUsageVerbose(): boolean {
-  const v = (process.env.OPENCLAUDE_LOG_TOKEN_USAGE ?? '').trim().toLowerCase()
+  const v = (process.env.SOTERIA_LOG_TOKEN_USAGE ?? '').trim().toLowerCase()
   if (!v) return false
   return v !== '0' && v !== 'false' && v !== 'off'
 }
@@ -337,7 +337,7 @@ export function addToTotalSessionCost(
   if (shouldLogTokenUsageVerbose()) {
     process.stderr.write(
       JSON.stringify({
-        tag: 'openclaude.tokenUsage',
+        tag: 'soteria.tokenUsage',
         model,
         provider: cacheProvider,
         input_tokens: usage.input_tokens,

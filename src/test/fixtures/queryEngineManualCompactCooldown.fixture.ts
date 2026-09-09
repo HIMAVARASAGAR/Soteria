@@ -36,7 +36,7 @@ async function drain(generator: AsyncGenerator<unknown>): Promise<void> {
 
 const savedSessionPersistenceDisabled = isSessionPersistenceDisabled()
 const fixtureCwd = mkdtempSync(
-  join(tmpdir(), 'openclaude-query-engine-cooldown-'),
+  join(tmpdir(), 'soteria-query-engine-cooldown-'),
 )
 
 try {

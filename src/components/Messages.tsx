@@ -26,9 +26,12 @@ import { collapseReadSearchGroups } from '../utils/collapseReadSearch.js';
 import { collapseTeammateShutdowns } from '../utils/collapseTeammateShutdowns.js';
 import { getGlobalConfig } from '../utils/config.js';
 import { isEnvTruthy } from '../utils/envUtils.js';
-import { isFullscreenEnvEnabled } from '../utils/fullscreen.js';
+import { isFullscreenEnvEnabled, isFullscreenActive } from '../utils/fullscreen.js';
 import { BRAND_NAME, BRAND_TAGLINE, BRAND_ACCENT_RGB } from '../constants/brand.js';
+import { AnimatedClawd } from './LogoV2/AnimatedClawd.js';
 import { useWelcomeProviderInfo } from '../utils/providerWelcome.js';
+import { getLatestVersion } from '../utils/autoUpdater.js';
+import { gt } from '../utils/semver.js';
 import { applyGrouping } from '../utils/groupToolUses.js';
 import { buildMessageLookups, createAssistantMessage, deriveUUID, getMessagesAfterCompactBoundary, getToolUseID, getToolUseIDs, hasUnresolvedHooksFromLookup, isNotEmptyMessage, normalizeMessages, reorderMessagesInUI, type StreamingThinking, type StreamingToolUse, shouldShowUserMessage } from '../utils/messages.js';
 import { plural } from '../utils/stringUtils.js';
@@ -80,11 +83,71 @@ function WelcomeHeaderInner(): React.ReactNode {
   const home = process.env.HOME || process.env.USERPROFILE || '';
   const displayCwd = home && cwd.startsWith(home) ? cwd.replace(home, '~') : cwd;
 
-  return <Box flexDirection="column" paddingX={0}>
-    <Text>{'  '}<Text color={BRAND_ACCENT_RGB} bold>{BRAND_NAME}</Text><Text dimColor> {'·'} {BRAND_TAGLINE}</Text></Text>
-    <Text>{'  '}v{version}{' · '}<Text bold>{providerInfo.model}</Text><Text dimColor> · {providerInfo.provider}</Text></Text>
-    <Text>{'  '}<Text dimColor>{displayCwd}</Text></Text>
-  </Box>;
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    let unmounted = false;
+    void getLatestVersion('latest')
+      .then(latest => {
+        if (!unmounted) {
+          if (latest) setLatestVersion(latest);
+          setChecked(true);
+        }
+      })
+      .catch(() => {
+        if (!unmounted) setChecked(true);
+      });
+    return () => {
+      unmounted = true;
+    };
+  }, []);
+
+  const hasUpdate = latestVersion && gt(latestVersion, version);
+
+  return (
+    <Box flexDirection="column" paddingLeft={1} paddingTop={1} marginBottom={1}>
+      <Box flexDirection="row" alignItems="center" gap={2}>
+        <AnimatedClawd />
+        <Box flexDirection="column" justifyContent="center">
+          <Box flexDirection="row">
+            <Text bold color={BRAND_ACCENT_RGB}>{BRAND_NAME}</Text>
+            <Text dimColor> v{version}</Text>
+          </Box>
+          <Box flexDirection="row">
+            {!providerInfo.isConfigured ? (
+              <>
+                <Text bold color="yellow">No model selected</Text>
+                <Text dimColor> · Select using </Text>
+                <Text bold underline color="cyan">/model</Text>
+              </>
+            ) : (
+              <Text dimColor>{providerInfo.model} · {providerInfo.provider}</Text>
+            )}
+          </Box>
+          <Box flexDirection="row">
+            <Text dimColor>{displayCwd}</Text>
+          </Box>
+        </Box>
+      </Box>
+      <Box marginTop={1} flexDirection="column">
+        {hasUpdate ? (
+          <Text bold color="yellow">
+            Update available: v{version} → v{latestVersion}. Type <Text bold underline>/update</Text> to upgrade.
+          </Text>
+        ) : checked ? (
+          <Text dimColor>✓ Soteria is up to date.</Text>
+        ) : null}
+        {!providerInfo.isConfigured ? (
+          <Text color="yellow">
+            ⚡ Get started: Type <Text bold underline>/model</Text> to choose your AI model and add your API key
+          </Text>
+        ) : (
+          <Text dimColor>Tips: /model to switch models · /help for commands · Esc to cancel</Text>
+        )}
+      </Box>
+    </Box>
+  );
 }
 
 // Dead code elimination: conditional import for proactive mode

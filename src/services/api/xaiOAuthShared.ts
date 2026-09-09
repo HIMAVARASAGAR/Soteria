@@ -20,7 +20,7 @@ export const DEFAULT_XAI_OAUTH_CALLBACK_HOST = '127.0.0.1'
 export const XAI_OAUTH_CALLBACK_PATH = '/callback'
 export const XAI_OAUTH_SCOPE =
   'openid profile email offline_access grok-cli:access api:access'
-export const XAI_OAUTH_REFERRER = 'openclaude'
+export const XAI_OAUTH_REFERRER = 'soteria'
 export const XAI_DEVICE_CODE_GRANT_TYPE =
   'urn:ietf:params:oauth:grant-type:device_code'
 

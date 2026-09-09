@@ -1,5 +1,6 @@
 const build = Bun.spawnSync({
-  cmd: ['bun', 'run', 'build'],
+  cmd: ['bun', 'scripts/build.ts'],
+  cwd: process.cwd(),
   stdout: 'pipe',
   stderr: 'pipe',
 })

@@ -62,7 +62,7 @@ const openClaudeCommandDescriptionKeys: Record<string, LocalizationKey> = {
   wiki: 'commands.wiki.description',
 }
 
-export function getOpenClaudeCommandDescriptionKey(
+export function getSoteriaCommandDescriptionKey(
   commandName: string,
 ): LocalizationKey | undefined {
   return openClaudeCommandDescriptionKeys[commandName]

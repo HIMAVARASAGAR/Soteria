@@ -29,6 +29,8 @@ export const ScrollChromeContext = createContext<{
   setStickyPrompt: () => {}
 });
 type Props = {
+  /** Pinned header content anchored at the top of the terminal */
+  top?: ReactNode;
   /** Content that scrolls (messages, tool output) */
   scrollable: ReactNode;
   /** Content pinned to the bottom (spinner, prompt, permissions) */
@@ -270,6 +272,7 @@ export function computeUnseenDivider(messages: readonly Message[], dividerIndex:
 export function FullscreenLayout(t0) {
   const $ = _c(47);
   const {
+    top,
     scrollable,
     bottom,
     overlay,
@@ -432,9 +435,10 @@ export function FullscreenLayout(t0) {
     } else {
       t18 = $[37];
     }
+    const topElement = top ? <Box flexShrink={0} width="100%" flexDirection="column">{top}</Box> : null;
     let t19;
-    if ($[38] !== t14 || $[39] !== t17 || $[40] !== t18) {
-      t19 = <PromptOverlayProvider>{t14}{t17}{t18}</PromptOverlayProvider>;
+    if ($[38] !== t14 || $[39] !== t17 || $[40] !== t18 || top) {
+      t19 = <PromptOverlayProvider>{topElement}{t14}{t17}{t18}</PromptOverlayProvider>;
       $[38] = t14;
       $[39] = t17;
       $[40] = t18;
@@ -445,8 +449,8 @@ export function FullscreenLayout(t0) {
     return t19;
   }
   let t8;
-  if ($[42] !== bottom || $[43] !== modal || $[44] !== overlay || $[45] !== scrollable) {
-    t8 = <>{scrollable}{bottom}{overlay}{modal}</>;
+  if ($[42] !== bottom || $[43] !== modal || $[44] !== overlay || $[45] !== scrollable || top) {
+    t8 = <>{top}{scrollable}{bottom}{overlay}{modal}</>;
     $[42] = bottom;
     $[43] = modal;
     $[44] = overlay;

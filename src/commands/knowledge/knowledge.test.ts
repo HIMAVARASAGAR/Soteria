@@ -35,7 +35,7 @@ describe('knowledge command', () => {
 
   beforeEach(async () => {
     await acquireSharedMutationLock('commands/knowledge.test.ts')
-    configDir = mkdtempSync(join(tmpdir(), 'openclaude-knowledge-command-'))
+    configDir = mkdtempSync(join(tmpdir(), 'soteria-knowledge-command-'))
     process.env.CLAUDE_CONFIG_DIR = configDir
     setClaudeConfigHomeDirForTesting(configDir)
     resetArc()

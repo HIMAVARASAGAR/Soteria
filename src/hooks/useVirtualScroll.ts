@@ -314,7 +314,10 @@ export function useVirtualScroll(
   let start: number
   let end: number
 
-  if (frozenRange) {
+  if (n === 0) {
+    start = 0
+    end = 0
+  } else if (frozenRange) {
     // Column just changed. Keep the pre-resize range to avoid mount churn.
     // Clamp to n in case messages were removed (/clear, compaction).
     ;[start, end] = frozenRange
@@ -481,7 +484,10 @@ export function useVirtualScroll(
   // Decrement freeze AFTER range is computed. Don't update prevRangeRef
   // during freeze so both frozen renders reuse the ORIGINAL pre-resize
   // range (not the clamped-to-n version if messages changed mid-freeze).
-  if (freezeRendersRef.current > 0) {
+  if (n === 0) {
+    prevRangeRef.current = [0, 0]
+    lastScrollTopRef.current = 0
+  } else if (freezeRendersRef.current > 0) {
     freezeRendersRef.current--
   } else {
     prevRangeRef.current = [start, end]
@@ -512,7 +518,7 @@ export function useVirtualScroll(
   // maxScroll stays at the old content height, and "jump to bottom" stops
   // short. Sticky snap is a single frame, not continuous scroll — the
   // time-slicing benefit doesn't apply.
-  if (effStart > effEnd || isSticky) {
+  if (effStart > effEnd || isSticky || n === 0) {
     effStart = start
     effEnd = end
   }
@@ -589,7 +595,7 @@ export function useVirtualScroll(
       ? Infinity
       : Math.max(effTopSpacer, offsets[effEnd]! - viewportH) + listOrigin
   useLayoutEffect(() => {
-    if (isSticky) {
+    if (isSticky || n === 0) {
       scrollRef.current?.setClampBounds(undefined, undefined)
     } else {
       scrollRef.current?.setClampBounds(clampMin, clampMax)

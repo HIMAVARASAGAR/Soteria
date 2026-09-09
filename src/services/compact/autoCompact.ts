@@ -87,7 +87,7 @@ export const AUTOCOMPACT_FAILURE_COOLDOWN_MS = 5 * 60 * 1000
 export const MAX_CONSECUTIVE_AUTOCOMPACT_FAILURES = 3
 
 export function getAutoCompactFailureCooldownMs(): number {
-  const override = process.env.OPENCLAUDE_AUTOCOMPACT_FAILURE_COOLDOWN_MS
+  const override = process.env.SOTERIA_AUTOCOMPACT_FAILURE_COOLDOWN_MS
   if (override) {
     const trimmed = override.trim()
     const parsed = Number(trimmed)

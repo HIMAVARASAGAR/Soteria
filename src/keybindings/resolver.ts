@@ -16,7 +16,7 @@ export type ChordResolveResult =
   | { type: 'match'; action: string }
   | { type: 'none' }
   | { type: 'unbound' }
-  | { type: 'chord_started'; pending: ParsedKeystroke[] }
+  | { type: 'chord_started'; pending: ParsedKeystroke[]; fallbackAction?: string }
   | { type: 'chord_cancelled' }
 
 /**
@@ -214,17 +214,23 @@ export function resolveKeyWithChordState(
     }
   }
 
-  // If this keystroke could start a longer chord, prefer that
-  // (even if there's an exact single-key match)
-  if (hasLongerChords) {
-    return { type: 'chord_started', pending: testChord }
-  }
-
   // Check for exact matches (last one wins)
   let exactMatch: ParsedBinding | undefined
   for (const binding of contextBindings) {
     if (chordExactlyMatches(testChord, binding)) {
       exactMatch = binding
+    }
+  }
+
+  // If this keystroke could start a longer chord, prefer that
+  // (even if there's an exact single-key match), but retain the exact match
+  // as fallbackAction so callers can execute it on timeout or when active.
+  if (hasLongerChords) {
+    return {
+      type: 'chord_started',
+      pending: testChord,
+      fallbackAction:
+        exactMatch && exactMatch.action !== null ? exactMatch.action : undefined,
     }
   }
 

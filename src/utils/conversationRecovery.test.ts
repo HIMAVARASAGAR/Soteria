@@ -70,7 +70,7 @@ function activeGoal(condition = 'resume goal') {
 }
 
 async function writeJsonl(entry: unknown): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-conversation-recovery-'))
+  const dir = await mkdtemp(join(tmpdir(), 'soteria-conversation-recovery-'))
   tempDirs.push(dir)
   const filePath = join(dir, 'resume.jsonl')
   await writeFile(filePath, `${JSON.stringify(entry)}\n`)
@@ -78,7 +78,7 @@ async function writeJsonl(entry: unknown): Promise<string> {
 }
 
 async function writeJsonlEntries(entries: unknown[]): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-conversation-recovery-'))
+  const dir = await mkdtemp(join(tmpdir(), 'soteria-conversation-recovery-'))
   tempDirs.push(dir)
   const filePath = join(dir, 'resume.jsonl')
   await writeFile(filePath, entries.map(entry => JSON.stringify(entry)).join('\n') + '\n')

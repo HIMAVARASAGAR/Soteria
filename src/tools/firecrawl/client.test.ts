@@ -35,9 +35,9 @@ describe('firecrawl client', () => {
 
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>
       expect(body).toMatchObject({
-        query: 'openclaude',
+        query: 'soteria',
         limit: 7,
-        origin: 'openclaude',
+        origin: 'soteria',
       })
 
       return new Response(
@@ -51,7 +51,7 @@ describe('firecrawl client', () => {
       )
     }))
 
-    await expect(firecrawlSearch('openclaude', { limit: 7 })).resolves.toEqual({
+    await expect(firecrawlSearch('soteria', { limit: 7 })).resolves.toEqual({
       web: [{ url: 'https://example.com', title: 'Example', description: 'desc' }],
     })
   })
@@ -68,7 +68,7 @@ describe('firecrawl client', () => {
       expect(body).toMatchObject({
         url: 'https://example.com',
         formats: ['markdown'],
-        origin: 'openclaude',
+        origin: 'soteria',
       })
 
       return new Response(
@@ -91,7 +91,7 @@ describe('firecrawl client', () => {
     delete process.env.FIRECRAWL_API_KEY
     delete process.env.FIRECRAWL_API_URL
 
-    await expect(firecrawlSearch('openclaude')).rejects.toThrow(
+    await expect(firecrawlSearch('soteria')).rejects.toThrow(
       'Firecrawl API key is required for the cloud API.',
     )
   })
@@ -125,7 +125,7 @@ describe('firecrawl client', () => {
     }))
 
     await expect(
-      firecrawlSearch('openclaude', { maxRetries: 3, backoffFactorSeconds: 0 }),
+      firecrawlSearch('soteria', { maxRetries: 3, backoffFactorSeconds: 0 }),
     ).resolves.toEqual({
       web: [{ url: 'https://example.com/retried' }],
     })
@@ -149,7 +149,7 @@ describe('firecrawl client', () => {
 
     await expect(
       Promise.race([
-        firecrawlSearch('openclaude', { maxRetries: 1, timeoutMs: 1 }),
+        firecrawlSearch('soteria', { maxRetries: 1, timeoutMs: 1 }),
         new Promise((_resolve, reject) =>
           setTimeout(
             reject,
@@ -180,7 +180,7 @@ describe('firecrawl client', () => {
     }))
 
     await expect(
-      firecrawlSearch('openclaude', { maxRetries: 1, timeoutMs: 20 }),
+      firecrawlSearch('soteria', { maxRetries: 1, timeoutMs: 20 }),
     ).resolves.toEqual({
       web: [{ url: 'https://example.com/cleanup' }],
     })

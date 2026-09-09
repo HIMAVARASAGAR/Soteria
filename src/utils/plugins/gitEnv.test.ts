@@ -63,7 +63,7 @@ describe('sanitizeEnvForGit', () => {
 })
 
 describe('buildGitChildEnv', () => {
-  const ORIGINAL_BAD_KEY = 'OPENCLAUDE_TEST_BAD_ENV_FOR_GIT'
+  const ORIGINAL_BAD_KEY = 'SOTERIA_TEST_BAD_ENV_FOR_GIT'
   let originalValue: string | undefined
 
   beforeEach(async () => {

@@ -23,6 +23,7 @@ import { env } from '../utils/env.js'
 import { isFullscreenEnvEnabled } from '../utils/fullscreen.js'
 import type { ImageDimensions } from '../utils/imageResizer.js'
 import { isModifierPressed, prewarmModifiers } from '../utils/modifiers.js'
+import { readClipboard } from '../ink/termio/osc.js'
 import { useDoublePress } from './useDoublePress.js'
 
 type MaybeCursor = void | Cursor
@@ -69,6 +70,7 @@ export type UseTextInputProps = {
   inputFilter?: (input: string, key: Key) => string
   inlineGhostText?: InlineGhostText
   dim?: (text: string) => string
+  onPaste?: (text: string) => void
 }
 
 export function useTextInput({
@@ -95,6 +97,7 @@ export function useTextInput({
   inputFilter,
   inlineGhostText,
   dim,
+  onPaste,
 }: UseTextInputProps): TextInputState {
   // Pre-warm the modifiers module for Apple Terminal (has internal guard, safe to call multiple times)
   if (env.terminal === 'Apple_Terminal') {
@@ -298,6 +301,29 @@ export function useTextInput({
     return Cursor.fromText(newText, columns, newOffset)
   }
 
+  function pasteFromClipboard(): Cursor {
+    const cursor = getLiveCursor()
+    void readClipboard()
+      .then(text => {
+        if (!text) return
+        const cleanText = multiline
+          ? text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+          : text.replace(/[\r\n]+/g, ' ').trim()
+        if (!cleanText) return
+
+        if (onPaste) {
+          onPaste(cleanText)
+          return
+        }
+
+        const live = getLiveCursor()
+        const next = live.insert(cleanText)
+        setValue(next.text, next.offset)
+      })
+      .catch(() => {})
+    return cursor
+  }
+
   const handleCtrl = mapInput([
     ['a', () => getLiveCursor().startOfLine()],
     ['b', () => getLiveCursor().left()],
@@ -313,6 +339,9 @@ export function useTextInput({
     ['n', () => downOrHistoryDown()],
     ['p', () => upOrHistoryUp()],
     ['u', killToLineStart],
+    ['v', pasteFromClipboard],
+    ['V', pasteFromClipboard],
+    ['\x16', pasteFromClipboard],
     ['w', killWordBefore],
     ['y', yank],
   ])
@@ -321,6 +350,8 @@ export function useTextInput({
     ['b', () => getLiveCursor().prevWord()],
     ['f', () => getLiveCursor().nextWord()],
     ['d', () => getLiveCursor().deleteWordAfter()],
+    ['v', pasteFromClipboard],
+    ['V', pasteFromClipboard],
     ['y', handleYankPop],
   ])
 
@@ -413,6 +444,10 @@ export function useTextInput({
           // Return the current cursor unchanged - handleEscape manages state internally
           return cursor
         }
+      case (key.ctrl || key.meta) && (key.name === 'v' || key.name === 'V'):
+        return pasteFromClipboard
+      case key.shift && Boolean(key.insert || key.name === 'insert'):
+        return pasteFromClipboard
       case key.leftArrow && (key.ctrl || key.meta || key.fn):
         return () => cursor.prevWord()
       case key.rightArrow && (key.ctrl || key.meta || key.fn):
@@ -465,6 +500,10 @@ export function useTextInput({
       default: {
         return function (input: string) {
           switch (true) {
+            case input === '\x16':
+            case (key.ctrl || key.meta) && (input === 'v' || input === 'V'):
+            case key.shift && (input === '\x1b[2;2~' || input === '\x1b[2~'):
+              return pasteFromClipboard()
             // Home key
             case input === '\x1b[H' || input === '\x1b[1~':
               return cursor.startOfLine()
@@ -485,6 +524,7 @@ export function useTextInput({
                 // eslint-disable-next-line custom-rules/no-lookbehind-regex -- .replace(re, str) on 1-2 char keystrokes: no-match returns same string (Object.is), regex never runs
                 .replace(/(?<=[^\\\r\n])\r$/, '')
                 .replace(/\r/g, '\n')
+              const processedText = multiline ? text : text.replace(/[\r\n]+/g, '')
               if (
                 cursor.text.length === 0 &&
                 cursor.isAtStart() &&
@@ -501,10 +541,10 @@ export function useTextInput({
                 // props numerically equal to what they were before the
                 // keystroke, useLayoutEffect never resynced the mirror — so
                 // the next character landed beside the retained `!`.
-                onChange(text)
+                onChange(processedText)
                 return undefined
               }
-              return cursor.insert(text)
+              return cursor.insert(processedText)
             }
           }
         }

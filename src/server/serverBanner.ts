@@ -1,5 +1,5 @@
 /**
- * Inert stub for the OpenClaude session-server startup banner.
+ * Inert stub for the Soteria session-server startup banner.
  *
  * The bundler noop-stubs this specifier in current builds; this module
  * mirrors that behavior for the typechecker. `printBanner` prints nothing —

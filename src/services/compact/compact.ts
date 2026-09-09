@@ -12,7 +12,13 @@ import { markPostCompaction } from 'src/bootstrap/state.js'
 import {
   getInvokedSkillsForAgent,
   getOriginalCwd,
+  getSdkBetas,
 } from '../../bootstrap/state.js'
+import { getContextWindowForModel } from '../../utils/context.js'
+import {
+  runChunkedRollingCompact,
+  shouldUseChunkedCompact,
+} from './chunkedCompact.js'
 import type { QuerySource } from '../../constants/querySource.js'
 import type { CanUseToolFn } from '../../hooks/useCanUseTool.js'
 import type { Tool, ToolUseContext } from '../../Tool.js'
@@ -451,46 +457,93 @@ export async function compactConversation(
     let summaryResponse: AssistantMessage
     let summary: string | null
     let ptlAttempts = 0
-    for (;;) {
-      summaryResponse = await streamCompactSummary({
+
+    // Check if conversation exceeds target model's input context capacity
+    const targetModel = context.options.mainLoopModel
+    const targetContextWindow = getContextWindowForModel(
+      targetModel,
+      getSdkBetas(),
+    )
+    const isOversizedForTarget = shouldUseChunkedCompact(
+      preCompactTokenCount,
+      targetContextWindow,
+    )
+
+    if (isOversizedForTarget) {
+      summaryResponse = await runChunkedRollingCompact({
         messages: messagesToSummarize,
-        summaryRequest,
-        appState,
         context,
-        preCompactTokenCount,
+        appState,
         cacheSafeParams: retryCacheSafeParams,
+        customInstructions,
+        preCompactTokenCount,
+        targetContextWindow,
+        streamSummaryFn: streamCompactSummary,
       })
       summary = getAssistantMessageText(summaryResponse)
-      if (!summary?.startsWith(PROMPT_TOO_LONG_ERROR_MESSAGE)) break
-
-      // CC-1180: compact request itself hit prompt-too-long. Truncate the
-      // oldest API-round groups and retry rather than leaving the user stuck.
-      ptlAttempts++
-      const truncated =
-        ptlAttempts <= MAX_PTL_RETRIES
-          ? truncateHeadForPTLRetry(messagesToSummarize, summaryResponse)
-          : null
-      if (!truncated) {
-        logEvent('tengu_compact_failed', {
-          reason:
-            'prompt_too_long' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    } else {
+      for (;;) {
+        summaryResponse = await streamCompactSummary({
+          messages: messagesToSummarize,
+          summaryRequest,
+          appState,
+          context,
           preCompactTokenCount,
-          promptCacheSharingEnabled,
-          ptlAttempts,
+          cacheSafeParams: retryCacheSafeParams,
         })
-        throw new Error(ERROR_MESSAGE_PROMPT_TOO_LONG)
-      }
-      logEvent('tengu_compact_ptl_retry', {
-        attempt: ptlAttempts,
-        droppedMessages: messagesToSummarize.length - truncated.length,
-        remainingMessages: truncated.length,
-      })
-      messagesToSummarize = truncated
-      // The forked-agent path reads from cacheSafeParams.forkContextMessages,
-      // not the messages param — thread the truncated set through both paths.
-      retryCacheSafeParams = {
-        ...retryCacheSafeParams,
-        forkContextMessages: truncated,
+        summary = getAssistantMessageText(summaryResponse)
+        if (!summary?.startsWith(PROMPT_TOO_LONG_ERROR_MESSAGE)) break
+
+        // CC-1180: compact request itself hit prompt-too-long.
+        // First try chunked rolling compact as an unblocker before dropping history!
+        ptlAttempts++
+        if (ptlAttempts === 1) {
+          try {
+            summaryResponse = await runChunkedRollingCompact({
+              messages: messagesToSummarize,
+              context,
+              appState,
+              cacheSafeParams: retryCacheSafeParams,
+              customInstructions,
+              preCompactTokenCount,
+              targetContextWindow,
+              streamSummaryFn: streamCompactSummary,
+            })
+            summary = getAssistantMessageText(summaryResponse)
+            if (summary && !summary.startsWith(PROMPT_TOO_LONG_ERROR_MESSAGE)) {
+              break
+            }
+          } catch {
+            // fall through to truncation
+          }
+        }
+
+        const truncated =
+          ptlAttempts <= MAX_PTL_RETRIES
+            ? truncateHeadForPTLRetry(messagesToSummarize, summaryResponse)
+            : null
+        if (!truncated) {
+          logEvent('tengu_compact_failed', {
+            reason:
+              'prompt_too_long' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+            preCompactTokenCount,
+            promptCacheSharingEnabled,
+            ptlAttempts,
+          })
+          throw new Error(ERROR_MESSAGE_PROMPT_TOO_LONG)
+        }
+        logEvent('tengu_compact_ptl_retry', {
+          attempt: ptlAttempts,
+          droppedMessages: messagesToSummarize.length - truncated.length,
+          remainingMessages: truncated.length,
+        })
+        messagesToSummarize = truncated
+        // The forked-agent path reads from cacheSafeParams.forkContextMessages,
+        // not the messages param — thread the truncated set through both paths.
+        retryCacheSafeParams = {
+          ...retryCacheSafeParams,
+          forkContextMessages: truncated,
+        }
       }
     }
 

@@ -49,10 +49,6 @@ import {
 } from '../utils/providerProfiles.js'
 import { getPrimaryModel } from '../utils/providerModels.js'
 import { clearStartupProviderOverrides } from '../utils/providerStartupOverrides.js'
-import {
-  discoverModelsForRoute,
-  resolveDiscoveryRouteIdFromBaseUrl,
-} from '../integrations/discoveryService.js'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1235,36 +1231,19 @@ function DiscoverModelsAndPick({
     return () => { cancelled = true }
   }, [provider, apiKey, baseUrl])
 
-  // Build suggested model list: discovered first, then well-known defaults
-  const knownDefaults: Record<string, string[]> = {
-    openai: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'o3', 'o3-mini'],
-    groq: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
-    deepseek: ['deepseek-chat', 'deepseek-coder'],
-    openrouter: ['anthropic/claude-sonnet-4-5', 'openai/gpt-4o', 'meta-llama/llama-3.3-70b-instruct'],
-    xai: ['grok-4', 'grok-4-mini', 'grok-3'],
-    'nvidia-nim': ['nvidia/llama-3.1-nemotron-70b-instruct', 'meta/llama-3.1-405b-instruct'],
-    custom: [],
-    anthropic: ['claude-sonnet-4-5', 'claude-opus-4-5', 'claude-haiku-3-5'],
-    gemini: [
-      DEFAULT_GEMINI_MODEL,
-      'gemini-2.5-pro',
-      'gemini-2.0-flash',
-      'gemini-1.5-pro',
-      'gemini-1.5-flash',
-    ],
-    mistral: ['mistral-vibe-cli-latest', 'mistral-large-latest', 'codestral-latest'],
-    ollama: [],
-  }
-
+  // Suggested model list is populated strictly from the live models discovered via the API key.
+  // If the provider returned no models (e.g. offline, rate-limited, or endpoint lacks /models),
+  // fall back to defaultModel so the user can proceed or type a custom model ID.
   const suggestedList = [
-    ...new Set([
-      ...(models.length > 0 ? models : (knownDefaults[provider] ?? [])),
-      defaultModel,
-    ]),
+    ...new Set(
+      models.length > 0
+        ? models
+        : (defaultModel ? [defaultModel] : [])
+    ),
   ].filter(Boolean)
 
   if (loading) {
-    return <LoadingState message={`Discovering ${PROVIDERS[provider].label} models…`} />
+    return <LoadingState message={`Fetching models from ${PROVIDERS[provider].label}…`} />
   }
 
   return (
@@ -1278,85 +1257,200 @@ function DiscoverModelsAndPick({
   )
 }
 
-async function discoverProviderModelIds(
+export async function discoverProviderModelIds(
   provider: ProviderKey,
   apiKey: string,
   baseUrl?: string,
 ): Promise<string[]> {
   const meta = PROVIDERS[provider]
-  const endpoint = (baseUrl ?? meta.baseUrl ?? '').replace(/\/$/, '')
+  const endpoint = (baseUrl ?? meta.baseUrl ?? '').replace(/\/+$/, '')
 
+  // 1. Google Gemini
   if (provider === 'gemini') {
     if (!apiKey.trim()) {
       return []
     }
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
-    )
-    if (!resp.ok) {
+    try {
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey.trim()}`,
+      )
+      if (!resp.ok) {
+        return []
+      }
+      type GeminiModelList = {
+        models?: Array<{
+          name?: string
+          supportedGenerationMethods?: string[]
+        }>
+      }
+      const json = (await resp.json()) as GeminiModelList
+      const list = (json.models ?? [])
+        .filter(
+          model =>
+            !model.supportedGenerationMethods ||
+            model.supportedGenerationMethods.includes('generateContent'),
+        )
+        .map(model => model.name?.replace(/^models\//, '').trim() ?? '')
+        .filter(Boolean)
+
+      return list.sort((a, b) => {
+        const getScore = (s: string) => {
+          if (s.includes('2.5')) return 3
+          if (s.includes('2.0')) return 2
+          if (s.includes('1.5')) return 1
+          return 0
+        }
+        return getScore(b) - getScore(a) || a.localeCompare(b)
+      })
+    } catch {
       return []
     }
-    type GeminiModelList = {
-      models?: Array<{
-        name?: string
-        supportedGenerationMethods?: string[]
-      }>
-    }
-    const json = await resp.json() as GeminiModelList
-    return (json.models ?? [])
-      .filter(model =>
-        !model.supportedGenerationMethods ||
-        model.supportedGenerationMethods.includes('generateContent'),
-      )
-      .map(model => model.name?.replace(/^models\//, '').trim() ?? '')
-      .filter(Boolean)
   }
 
+  // 2. Anthropic
   if (provider === 'anthropic') {
     if (!endpoint || !apiKey.trim()) {
       return []
     }
-    const resp = await fetch(`${endpoint}/v1/models`, {
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-    })
-    if (!resp.ok) {
+    try {
+      const resp = await fetch(`${endpoint}/v1/models`, {
+        headers: {
+          'x-api-key': apiKey.trim(),
+          'anthropic-version': '2023-06-01',
+        },
+      })
+      if (!resp.ok) {
+        return []
+      }
+      type AnthropicModelList = { data?: Array<{ id?: string }> }
+      const json = (await resp.json()) as AnthropicModelList
+      const list = (json.data ?? [])
+        .map(model => model.id?.trim() ?? '')
+        .filter(Boolean)
+
+      return list.sort((a, b) => {
+        const getScore = (s: string) => {
+          if (s.includes('3-7') || s.includes('3.7')) return 4
+          if (s.includes('3-5') || s.includes('3.5')) return 3
+          if (s.includes('opus')) return 2
+          if (s.includes('haiku')) return 1
+          return 0
+        }
+        return getScore(b) - getScore(a) || a.localeCompare(b)
+      })
+    } catch {
       return []
     }
-    type AnthropicModelList = { data?: Array<{ id?: string }> }
-    const json = await resp.json() as AnthropicModelList
-    return (json.data ?? []).map(model => model.id?.trim() ?? '').filter(Boolean)
   }
 
-  const routeId =
-    resolveDiscoveryRouteIdFromBaseUrl(endpoint) ??
-    (provider === 'custom' ? null : meta.profile)
-  if (routeId && routeId !== 'anthropic' && routeId !== 'gemini') {
-    const result = await discoverModelsForRoute(routeId, {
-      baseUrl: endpoint,
-      apiKey,
-      forceRefresh: true,
-    })
-    if (result && result.source !== 'error') {
-      const ids = result.models.map(model => model.apiName.trim()).filter(Boolean)
-      if (ids.length > 0) {
-        return [...new Set(ids)]
+  // 3. Ollama (local)
+  if (provider === 'ollama') {
+    try {
+      const host = endpoint || 'http://localhost:11434'
+      const resp = await fetch(`${host}/api/tags`)
+      if (!resp.ok) {
+        return []
       }
+      type OllamaTagList = { models?: Array<{ name?: string }> }
+      const json = (await resp.json()) as OllamaTagList
+      return (json.models ?? []).map(m => m.name?.trim() ?? '').filter(Boolean)
+    } catch {
+      return []
     }
   }
 
+  // 4. OpenAI & OpenAI-compatible providers
+  // (openai, groq, deepseek, openrouter, xai, mistral, nvidia-nim, custom)
   if (!endpoint) {
     return []
   }
-  const resp = await fetch(`${endpoint}/models`, {
-    headers: apiKey.trim() ? { Authorization: `Bearer ${apiKey}` } : {},
-  })
-  if (!resp.ok) {
+
+  const headers: Record<string, string> = {}
+  if (apiKey.trim()) {
+    headers['Authorization'] = `Bearer ${apiKey.trim()}`
+  }
+
+  let resp: Response | null = null
+  try {
+    resp = await fetch(`${endpoint}/models`, { headers })
+    // If returned 404 and endpoint doesn't end in /v1, try appending /v1/models
+    if (resp.status === 404 && !endpoint.endsWith('/v1')) {
+      resp = await fetch(`${endpoint}/v1/models`, { headers })
+    }
+  } catch {
     return []
   }
-  type ModelListResponse = { data?: Array<{ id?: string }> }
-  const json = await resp.json() as ModelListResponse
-  return (json.data ?? []).map(model => model.id?.trim() ?? '').filter(Boolean)
+
+  if (!resp || !resp.ok) {
+    return []
+  }
+
+  type ModelItem = {
+    id?: string
+    name?: string
+    active?: boolean
+    capabilities?: { completion_chat?: boolean }
+  }
+  type ModelListResp = { data?: ModelItem[] } | ModelItem[]
+
+  let rawList: ModelItem[] = []
+  try {
+    const json = (await resp.json()) as ModelListResp
+    if (Array.isArray(json)) {
+      rawList = json
+    } else if (Array.isArray(json?.data)) {
+      rawList = json.data
+    }
+  } catch {
+    return []
+  }
+
+  let filtered = rawList
+
+  if (provider === 'openai') {
+    // Exclude non-chat and auxiliary models (embeddings, audio, dalle, moderations, completion-only engines)
+    const nonChatRegex =
+      /^(text-embedding|embedding|tts|whisper|dall-e|babbage|davinci|text-moderation|canary|omni-moderation)/i
+    filtered = filtered.filter(m => {
+      const id = m.id ?? m.name ?? ''
+      return id && !nonChatRegex.test(id)
+    })
+  } else if (provider === 'groq') {
+    // Filter inactive models and audio/guard models
+    const nonChatRegex = /(whisper|distil-whisper|guard|safeguard|playai)/i
+    filtered = filtered.filter(m => {
+      const id = m.id ?? m.name ?? ''
+      return id && m.active !== false && !nonChatRegex.test(id)
+    })
+  } else if (provider === 'mistral') {
+    filtered = filtered.filter(m => {
+      const id = m.id ?? m.name ?? ''
+      if (!id || id.includes('embed')) return false
+      if (m.capabilities && m.capabilities.completion_chat === false) return false
+      return true
+    })
+  }
+
+  const ids = filtered
+    .map(m => (m.id ?? m.name ?? '').trim())
+    .filter(Boolean)
+
+  const uniqueIds = [...new Set(ids)]
+
+  if (provider === 'openai') {
+    uniqueIds.sort((a, b) => {
+      const getScore = (id: string) => {
+        if (/^o3/i.test(id)) return 10
+        if (/^o1/i.test(id)) return 9
+        if (/^gpt-4\.5/i.test(id)) return 8
+        if (/^gpt-4o/i.test(id)) return 7
+        if (/^chatgpt/i.test(id)) return 6
+        if (/^gpt-4/i.test(id)) return 5
+        return 0
+      }
+      return getScore(b) - getScore(a) || a.localeCompare(b)
+    })
+  }
+
+  return uniqueIds
 }

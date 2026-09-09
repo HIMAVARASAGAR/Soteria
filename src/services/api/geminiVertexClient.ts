@@ -146,7 +146,7 @@ function summarizeRequestContents(contents: GeminiVertexContent[]): string {
 
 // Thinking-capable Vertex Gemini models spend a chunk of maxOutputTokens on
 // internal reasoning (thoughtsTokenCount) before emitting any visible text.
-// If openclaude passes a tight budget — common for the first turn of a chat —
+// If soteria passes a tight budget — common for the first turn of a chat —
 // the model burns the entire allotment thinking and the response comes back
 // with finishReason=MAX_TOKENS and no `parts`. Boost the floor for these
 // families so a simple greeting actually produces a reply.
@@ -401,7 +401,7 @@ function toGeminiContents(
     const role: 'user' | 'model' = message.role === 'assistant' ? 'model' : 'user'
     // Gemini's function-calling protocol expects a turn carrying
     // functionResponse parts to be PURE (no text mixed in) and to immediately
-    // follow the model's functionCall turn. openclaude, however, appends
+    // follow the model's functionCall turn. soteria, however, appends
     // system-reminder text blocks to the same user message as a tool_result —
     // which would emit `user[functionResponse, text]`. Vertex then silently
     // produces an empty response (finishReason STOP, 0 tokens). So we collect
@@ -458,7 +458,7 @@ function toGeminiContents(
   return out
 }
 
-// openclaude ships a large coding-agent system prompt as params.system. Vertex
+// soteria ships a large coding-agent system prompt as params.system. Vertex
 // expects it in the top-level `systemInstruction` field — passing it inside
 // `contents` would lose its role and confuse the model. Returns undefined if
 // the caller didn't send one (so we don't emit an empty instruction object).
@@ -552,7 +552,7 @@ function extractContentBlocks(
 }
 
 // Adapt the completed Vertex response to the Anthropic streaming event
-// sequence the rest of openclaude consumes. Emits one content_block_start /
+// sequence the rest of soteria consumes. Emits one content_block_start /
 // delta / stop trio per block so the streaming accumulator builds the right
 // shape for multi-block (text + tool_use) responses.
 async function* toAnthropicStream(
@@ -632,7 +632,7 @@ export function createGeminiVertexClient(options: GeminiVertexClientOptions) {
       // Gemini 3 thinking models misbehave below temperature 1.0: Google warns
       // it "may lead to unexpected behavior, such as looping or degraded
       // performance". In practice the model burns its budget thinking and then
-      // emits ZERO text parts (finishReason STOP, empty response). openclaude,
+      // emits ZERO text parts (finishReason STOP, empty response). soteria,
       // like most coding agents, sends a low temperature for determinism — so
       // we clamp thinking models to the documented 1.0 floor. Non-thinking
       // models keep the caller's temperature untouched.

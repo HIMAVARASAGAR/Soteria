@@ -132,6 +132,7 @@ import { escapeXml } from '../utils/xml.js';
 import type { ThinkingConfig } from '../utils/thinking.js';
 import { gracefulShutdownSync, isShuttingDown } from '../utils/gracefulShutdown.js';
 import { handlePromptSubmit, type PromptInputHelpers } from '../utils/handlePromptSubmit.js';
+import { isModelConfigured } from '../utils/providerWelcome.js';
 import { useQueueProcessor } from '../hooks/useQueueProcessor.js';
 import { useMailboxBridge } from '../hooks/useMailboxBridge.js';
 import { queryCheckpoint, logQueryProfileReport } from '../utils/queryProfiler.js';
@@ -1188,7 +1189,7 @@ export function REPL({
   // session from mid-conversation context.
   const haikuTitleAttemptedRef = useRef((initialMessages?.length ?? 0) > 0);
   const agentTitle = mainThreadAgentDefinition?.agentType;
-  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'OpenClaude';
+  const terminalTitle = sessionTitle ?? agentTitle ?? haikuTitle ?? 'Soteria';
   const isWaitingForApproval = toolUseConfirmQueue.length > 0 || promptQueue.length > 0 || pendingWorkerRequest || pendingSandboxRequest;
   // Local-jsx commands (like /plugin, /config) show user-facing dialogs that
   // wait for input. Require jsx != null — if the flag is stuck true but jsx
@@ -1538,7 +1539,32 @@ export function REPL({
   const [showCostDialog, setShowCostDialog] = useState(false);
   const [conversationId, setConversationId] = useState(randomUUID());
 
-  // Idle-return dialog: shown when user submits after a long idle gap
+  // Reset scroll and clear clamp bounds when conversationId changes (e.g. /clear, session reset)
+  const isFirstConversationMountRef = useRef(true);
+  useEffect(() => {
+    if (isFirstConversationMountRef.current) {
+      isFirstConversationMountRef.current = false;
+      return;
+    }
+    scrollRef.current?.setClampBounds(undefined, undefined);
+    scrollRef.current?.scrollTo(0);
+    scrollRef.current?.scrollToBottom();
+    repinScroll();
+    userInputBaselineRef.current = 0;
+  }, [conversationId, repinScroll]);
+
+  // Also catch any clear where messages array becomes empty
+  const prevMessagesCountRef = useRef(messages.length);
+  useEffect(() => {
+    if (prevMessagesCountRef.current > 0 && messages.length === 0) {
+      scrollRef.current?.setClampBounds(undefined, undefined);
+      scrollRef.current?.scrollTo(0);
+      scrollRef.current?.scrollToBottom();
+      repinScroll();
+      userInputBaselineRef.current = 0;
+    }
+    prevMessagesCountRef.current = messages.length;
+  }, [messages.length, repinScroll]);
   const [idleReturnPending, setIdleReturnPending] = useState<{
     input: string;
     idleMinutes: number;
@@ -3342,6 +3368,37 @@ export function REPL({
       return;
     }
 
+    // Intercept prompt submissions if no AI model is configured yet.
+    // Slash commands (e.g. /model, /help, /config) and bash commands (!cmd) are always allowed.
+    const isSlashCommand = !speculationAccept && input.trim().startsWith('/');
+    if (!isSlashCommand && inputMode === 'prompt' && !isModelConfigured()) {
+      addNotification({
+        key: 'no-model-configured',
+        jsx: (
+          <Text color="yellow">
+            ⚡ No AI model selected. Type <Text bold underline color="cyan">/model</Text> to choose your model and add your API key.
+          </Text>
+        ),
+        priority: 'immediate',
+      });
+      setStashedPrompt({
+        text: input,
+        cursorOffset: input.length,
+        pastedContents,
+      });
+      if (!options?.fromKeybinding) {
+        addToHistory({
+          display: input,
+          pastedContents,
+        });
+      }
+      setInputValue('');
+      helpers.setCursorOffset(0);
+      helpers.clearBuffer();
+      setPastedContents({});
+      return;
+    }
+
     // Idle-return: prompt returning users to start fresh when the
     // conversation is large and the cache is cold. tengu_willow_mode
     // controls treatment: "dialog" (blocking), "hint" (notification), "off".
@@ -3392,7 +3449,6 @@ export function REPL({
     //   Remote mode is exempt: it sends via WebSocket and returns early without
     //   calling handlePromptSubmit, so there's no clobbering risk — restore eagerly.
     // In both deferred cases, the stash is restored after await handlePromptSubmit.
-    const isSlashCommand = !speculationAccept && input.trim().startsWith('/');
     // Submit runs "now" (not queued) when not already loading, or when
     // accepting speculation, or in remote mode (which sends via WS and
     // returns early without calling handlePromptSubmit).
@@ -3888,7 +3944,7 @@ export function REPL({
   // empty to non-empty, not on every length change -- otherwise a render loop
   // (concurrent onQuery thrashing, etc.) spams saveGlobalConfig, which hits
   // ELOCKED under concurrent sessions and falls back to unlocked writes.
-  // That write storm is the primary trigger for ~/.openclaude.json corruption
+  // That write storm is the primary trigger for ~/.soteria.json corruption
   // (GH #3117).
   const hasCountedQueueUseRef = useRef(false);
   useEffect(() => {
@@ -4131,7 +4187,7 @@ export function REPL({
   useEffect(() => {
     const handleSuspend = () => {
       // Print suspension instructions
-      process.stdout.write(`\nOpenClaude has been suspended. Run \`fg\` to bring OpenClaude back.\nNote: ctrl + z now suspends OpenClaude, ctrl + _ undoes input.\n`);
+      process.stdout.write(`\nSoteria has been suspended. Run \`fg\` to bring Soteria back.\nNote: ctrl + z now suspends Soteria, ctrl + _ undoes input.\n`);
     };
     const handleResume = () => {
       // Force complete component tree replacement instead of terminal clear

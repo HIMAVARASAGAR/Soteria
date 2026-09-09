@@ -141,17 +141,11 @@ export async function setClipboard(text: string): Promise<string> {
   const b64 = Buffer.from(text, 'utf8').toString('base64')
   const raw = osc(OSC.CLIPBOARD, 'c', b64)
 
-  // Native safety net — fire FIRST, before the tmux await, so a quick
-  // focus-switch after selecting doesn't race pbcopy. Previously this ran
-  // AFTER awaiting tmux load-buffer, adding ~50-100ms of subprocess latency
-  // before pbcopy even started — fast cmd+tab → paste would beat it
-  // (https://anthropic.slack.com/archives/C07VBSHV7EV/p1773943921788829).
-  // Gated on SSH_CONNECTION (not SSH_TTY) since tmux panes inherit SSH_TTY
-  // forever but SSH_CONNECTION is in tmux's default update-environment and
-  // clears on local attach. Fire-and-forget.
-  if (!process.env['SSH_CONNECTION']) copyNative(text)
+  // Native safety net — fire FIRST, in parallel with the tmux await
+  const nativePromise = !process.env['SSH_CONNECTION'] ? copyNative(text) : undefined
 
   const tmuxBufferLoaded = await tmuxLoadBuffer(text)
+  if (nativePromise) await nativePromise.catch(() => {})
 
   // Inner OSC uses BEL directly (not osc()) — ST's ESC would need doubling
   // too, and BEL works everywhere for OSC 52.
@@ -168,84 +162,195 @@ let linuxCopy: 'wl-copy' | 'xclip' | 'xsel' | null | undefined
  * Shell out to a native clipboard utility as a safety net for OSC 52.
  * Only called when not in an SSH session (over SSH, these would write to
  * the remote machine's clipboard — OSC 52 is the right path there).
- * Fire-and-forget: failures are silent since OSC 52 may have succeeded.
  */
-function copyNative(text: string): void {
+async function copyNative(text: string): Promise<void> {
   const opts = { input: text, useCwd: false, timeout: 2000 }
   switch (process.platform) {
     case 'darwin':
-      void execFileNoThrow('pbcopy', [], opts)
+      await execFileNoThrow('pbcopy', [], opts)
       return
     case 'linux': {
       if (linuxCopy === null) return
       if (linuxCopy === 'wl-copy') {
-        void execFileNoThrow('wl-copy', [], opts)
+        await execFileNoThrow('wl-copy', [], opts)
         return
       }
       if (linuxCopy === 'xclip') {
-        void execFileNoThrow('xclip', ['-selection', 'clipboard'], opts)
+        await execFileNoThrow('xclip', ['-selection', 'clipboard'], opts)
         return
       }
       if (linuxCopy === 'xsel') {
-        void execFileNoThrow('xsel', ['--clipboard', '--input'], opts)
+        await execFileNoThrow('xsel', ['--clipboard', '--input'], opts)
         return
       }
       // First call: probe wl-copy (Wayland) then xclip/xsel (X11), cache winner.
-      void execFileNoThrow('wl-copy', [], opts).then(r => {
-        if (r.code === 0) {
-          linuxCopy = 'wl-copy'
-          return
-        }
-        void execFileNoThrow('xclip', ['-selection', 'clipboard'], opts).then(
-          r2 => {
-            if (r2.code === 0) {
-              linuxCopy = 'xclip'
-              return
-            }
-            void execFileNoThrow('xsel', ['--clipboard', '--input'], opts).then(
-              r3 => {
-                linuxCopy = r3.code === 0 ? 'xsel' : null
-              },
-            )
-          },
-        )
-      })
+      const r = await execFileNoThrow('wl-copy', [], opts)
+      if (r.code === 0) {
+        linuxCopy = 'wl-copy'
+        return
+      }
+      const r2 = await execFileNoThrow('xclip', ['-selection', 'clipboard'], opts)
+      if (r2.code === 0) {
+        linuxCopy = 'xclip'
+        return
+      }
+      const r3 = await execFileNoThrow('xsel', ['--clipboard', '--input'], opts)
+      linuxCopy = r3.code === 0 ? 'xsel' : null
       return
     }
-    case 'win32':
+    case 'win32': {
       // Avoid piping non-ASCII text through the Windows stdin/codepage
       // boundary. Write UTF-8 text to a temp file and let PowerShell read it
       // directly as UTF-8 before calling Set-Clipboard.
-      void (async () => {
-        const tempPath = generateTempFilePath('openclaude-clipboard', '.txt')
-        const escapedTempPath = tempPath.replace(/'/g, "''")
-        try {
-          await writeFile(tempPath, text, { encoding: 'utf8' })
-          await execFileNoThrow(
-            'powershell',
-            [
-              '-NoProfile',
-              '-NonInteractive',
-              '-Command',
-              `$text = [System.IO.File]::ReadAllText('${escapedTempPath}', [System.Text.Encoding]::UTF8); Set-Clipboard -Value $text`,
-            ],
-            {
-              useCwd: false,
-              timeout: opts.timeout,
-              stdin: 'ignore',
-            },
-          )
-        } finally {
-          await unlink(tempPath).catch(() => {})
-        }
-      })().catch(() => {})
+      const tempPath = generateTempFilePath('soteria-clipboard', '.txt')
+      const escapedTempPath = tempPath.replace(/'/g, "''")
+      try {
+        await writeFile(tempPath, text, { encoding: 'utf8' })
+        await execFileNoThrow(
+          'powershell',
+          [
+            '-NoProfile',
+            '-NonInteractive',
+            '-Command',
+            `$text = [System.IO.File]::ReadAllText('${escapedTempPath}', [System.Text.Encoding]::UTF8); Set-Clipboard -Value $text`,
+          ],
+          {
+            useCwd: false,
+            timeout: opts.timeout,
+            stdin: 'ignore',
+          },
+        )
+      } finally {
+        await unlink(tempPath).catch(() => {})
+      }
       return
+    }
   }
 }
 
 /** @internal test-only */
 export function _resetLinuxCopyCache(): void {
   linuxCopy = undefined
+}
+
+// Linux clipboard read tool: undefined = not yet probed, null = none available.
+// Probe order: wl-paste (Wayland) → xclip (X11) → xsel (X11 fallback).
+let linuxPaste: 'wl-paste' | 'xclip' | 'xsel' | null | undefined
+
+/** @internal test-only */
+export function _resetLinuxPasteCache(): void {
+  linuxPaste = undefined
+}
+
+/**
+ * Read text from native system clipboard.
+ */
+async function readClipboardNative(): Promise<string> {
+  const opts = { useCwd: false, timeout: 3000 }
+  switch (process.platform) {
+    case 'darwin': {
+      const { stdout, code } = await execFileNoThrow('pbpaste', [], opts)
+      return code === 0 && stdout ? stdout : ''
+    }
+    case 'win32': {
+      const { stdout, code } = await execFileNoThrow(
+        'powershell',
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-Command',
+          '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Get-Clipboard',
+        ],
+        opts,
+      )
+      return code === 0 && stdout ? stdout : ''
+    }
+    case 'linux': {
+      if (linuxPaste === null) return ''
+      if (linuxPaste === 'wl-paste') {
+        const { stdout, code } = await execFileNoThrow(
+          'wl-paste',
+          ['--no-newline'],
+          opts,
+        )
+        return code === 0 && stdout ? stdout : ''
+      }
+      if (linuxPaste === 'xclip') {
+        const { stdout, code } = await execFileNoThrow(
+          'xclip',
+          ['-selection', 'clipboard', '-o'],
+          opts,
+        )
+        return code === 0 && stdout ? stdout : ''
+      }
+      if (linuxPaste === 'xsel') {
+        const { stdout, code } = await execFileNoThrow(
+          'xsel',
+          ['--clipboard', '--output'],
+          opts,
+        )
+        return code === 0 && stdout ? stdout : ''
+      }
+      // Probe wl-paste then xclip then xsel
+      const wl = await execFileNoThrow('wl-paste', ['--no-newline'], opts)
+      if (wl.code === 0) {
+        linuxPaste = 'wl-paste'
+        return wl.stdout || ''
+      }
+      const xclip = await execFileNoThrow(
+        'xclip',
+        ['-selection', 'clipboard', '-o'],
+        opts,
+      )
+      if (xclip.code === 0) {
+        linuxPaste = 'xclip'
+        return xclip.stdout || ''
+      }
+      const xsel = await execFileNoThrow(
+        'xsel',
+        ['--clipboard', '--output'],
+        opts,
+      )
+      if (xsel.code === 0) {
+        linuxPaste = 'xsel'
+        return xsel.stdout || ''
+      }
+      linuxPaste = null
+      return ''
+    }
+    default:
+      return ''
+  }
+}
+
+/**
+ * Read text from the system clipboard.
+ * Supports native system clipboard across macOS (pbpaste), Windows (PowerShell Get-Clipboard),
+ * Linux (wl-paste/xclip/xsel), and tmux paste buffer when available.
+ */
+export async function readClipboard(): Promise<string> {
+  if (!process.env['SSH_CONNECTION']) {
+    const text = await readClipboardNative()
+    if (text) return text
+  }
+
+  if (process.env['TMUX']) {
+    const { stdout, code } = await execFileNoThrow(
+      'tmux',
+      ['save-buffer', '-'],
+      {
+        useCwd: false,
+        timeout: 2000,
+      },
+    )
+    if (code === 0 && stdout) return stdout
+  }
+
+  if (process.env['SSH_CONNECTION']) {
+    return await readClipboardNative()
+  }
+
+  return ''
 }
 
 /**

@@ -481,7 +481,7 @@ test('Gemini Vertex client keeps functionResponse turns pure (splits trailing te
         content: [{ type: 'tool_use', id: 'toolu_1', name: 'Skill', input: { skill: 'x' } }],
       },
       {
-        // openclaude appends a system-reminder text AFTER the tool_result in
+        // soteria appends a system-reminder text AFTER the tool_result in
         // the SAME user message â€” this must not pollute the functionResponse turn.
         role: 'user',
         content: [

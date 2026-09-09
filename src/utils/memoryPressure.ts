@@ -2,7 +2,7 @@
  * Memory Pressure Monitor
  *
  * Watches process RSS and triggers cleanup actions at configurable thresholds.
- * Designed to prevent OOM when running multiple OpenClaude sessions.
+ * Designed to prevent OOM when running multiple Soteria sessions.
  */
 
 import { logForDebugging } from './debug.js'
@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: MemoryPressureConfig = {
   criticalThresholdMB: 0,
   checkIntervalMs: 30_000,
   perSessionBudgetMB: Number.parseInt(
-    process.env.OPENCLAUDE_MAX_MEMORY_MB ?? '1536',
+    process.env.SOTERIA_MAX_MEMORY_MB ?? '1536',
     10,
   ),
 }

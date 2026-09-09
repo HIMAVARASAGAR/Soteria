@@ -90,7 +90,7 @@ export async function assertMinVersion(): Promise<void> {
 
   // Skip version check for third-party providers using upstream Anthropic
   // builds — the min version kill-switch is first-party-specific. Builds
-  // with a custom PACKAGE_URL (like OpenClaude) should still be checked.
+  // with a custom PACKAGE_URL (like Soteria) should still be checked.
   if (
     getAPIProvider() !== 'firstParty' &&
     MACRO.PACKAGE_URL === '@anthropic-ai/claude-code'
@@ -348,6 +348,32 @@ export async function getLatestVersion(
 ): Promise<string | null> {
   const npmTag = channel === 'stable' ? 'stable' : 'latest'
 
+  // Fast path: direct public HTTP request to npm registry
+  try {
+    const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
+    const response = await withTimeoutSignal(3000, abortSignal =>
+      axios.get<{ 'dist-tags'?: Record<string, string> }>(
+        `https://registry.npmjs.org/${pkgUrl}`,
+        {
+          signal: abortSignal,
+          headers: { Accept: 'application/json' },
+        },
+      ),
+    )
+    if (response.status === 200 && response.data?.['dist-tags']) {
+      const tagVersion = response.data['dist-tags'][npmTag]
+      if (tagVersion) {
+        logForDebugging(`getLatestVersion: HTTP fetch returned ${tagVersion}`)
+        return tagVersion
+      }
+    }
+  } catch (error) {
+    logForDebugging(
+      `getLatestVersion: HTTP fetch failed, falling back to npm view: ${error}`,
+    )
+  }
+
+  // Fallback: spawn npm view
   // Run from home directory to avoid reading project-level .npmrc
   // which could be maliciously crafted to redirect to an attacker's registry
   const result = await withTimeoutSignal(5000, abortSignal =>
@@ -382,6 +408,31 @@ export type NpmDistTags = {
  * This is used by the doctor command to show users what versions are available.
  */
 export async function getNpmDistTags(): Promise<NpmDistTags> {
+  // Fast path: direct HTTP request to npm registry
+  try {
+    const pkgUrl = encodeURIComponent(MACRO.PACKAGE_URL).replace('%40', '@')
+    const response = await withTimeoutSignal(3000, abortSignal =>
+      axios.get<{ 'dist-tags'?: Record<string, string> }>(
+        `https://registry.npmjs.org/${pkgUrl}`,
+        {
+          signal: abortSignal,
+          headers: { Accept: 'application/json' },
+        },
+      ),
+    )
+    if (response.status === 200 && response.data?.['dist-tags']) {
+      const tags = response.data['dist-tags']
+      return {
+        latest: typeof tags.latest === 'string' ? tags.latest : null,
+        stable: typeof tags.stable === 'string' ? tags.stable : null,
+      }
+    }
+  } catch (error) {
+    logForDebugging(
+      `getNpmDistTags: HTTP fetch failed, falling back to npm view: ${error}`,
+    )
+  }
+
   // Run from home directory to avoid reading project-level .npmrc
   const result = await withTimeoutSignal(5000, abortSignal =>
     execFileNoThrowWithCwd(

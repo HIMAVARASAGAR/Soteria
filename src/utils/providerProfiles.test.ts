@@ -99,7 +99,7 @@ beforeEach(async () => {
   for (const key of RESTORED_KEYS) {
     delete process.env[key]
   }
-  testConfigDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+  testConfigDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
   process.env.CLAUDE_CONFIG_DIR = testConfigDir
 })
 
@@ -1389,7 +1389,7 @@ describe('getProviderPresetDefaults', () => {
 
 describe('setActiveProviderProfile', () => {
   test('sets OPENAI_MODEL env var when switching to an openai-type provider', async () => {
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.env.CLAUDE_CONFIG_DIR = configDir
 
     try {
@@ -1432,8 +1432,8 @@ describe('setActiveProviderProfile', () => {
   // leaving a stale startup file that hit the missing-cred warning on
   // every non-interactive launch after logout.
   test('persists xAI OAuth profile with marker so logout cleanup can clear it', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -1483,8 +1483,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists no-key openai-compatible profiles for restart fallback', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
     process.env.OPENAI_API_KEY = 'sk-shell-should-not-persist'
@@ -1528,8 +1528,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists primary model for keyed openai-compatible multi-model profiles', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -1574,8 +1574,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists descriptor-backed direct vendors using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -1619,8 +1619,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists the Atlas key for generic openai profiles targeting Atlas Cloud', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -1660,8 +1660,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists Venice profiles using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -1703,10 +1703,10 @@ describe('setActiveProviderProfile', () => {
 
   test('persists Fireworks AI profiles using a legacy-compatible openai startup profile', async () => {
     const tempDir = mkdtempSync(
-      join(tmpdir(), 'openclaude-provider-'),
+      join(tmpdir(), 'soteria-provider-'),
     )
     const configDir = mkdtempSync(
-      join(tmpdir(), 'openclaude-provider-config-'),
+      join(tmpdir(), 'soteria-provider-config-'),
     )
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
@@ -1753,8 +1753,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists Xiaomi MiMo profiles using a legacy-compatible openai startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -1796,8 +1796,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists bedrock profiles using a dedicated startup profile kind', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 
@@ -1839,8 +1839,8 @@ describe('setActiveProviderProfile', () => {
   })
 
   test('persists anthropic profiles using a dedicated anthropic startup profile', async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-'))
-    const configDir = mkdtempSync(join(tmpdir(), 'openclaude-provider-config-'))
+    const tempDir = mkdtempSync(join(tmpdir(), 'soteria-provider-'))
+    const configDir = mkdtempSync(join(tmpdir(), 'soteria-provider-config-'))
     process.chdir(tempDir)
     process.env.CLAUDE_CONFIG_DIR = configDir
 

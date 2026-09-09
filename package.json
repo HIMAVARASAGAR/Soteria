@@ -1,6 +1,6 @@
 {
   "name": "@himavarasagar/soteria",
-  "version": "0.18.0",
+  "version": "0.18.4",
   "description": "Soteria is a secure agentic coding and analysis terminal for cloud and local models",
   "type": "module",
   "bin": {
@@ -143,7 +143,6 @@
     "@types/bun": "1.3.11",
     "@types/node": "25.5.0",
     "@types/react": "19.2.14",
-    "bun": "^1.3.14",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"
   },
@@ -152,7 +151,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/HIMAVARASAGAR/Soteria.git"
+    "url": "git+https://github.com/HIMAVARASAGAR/Soteria.git"
   },
   "keywords": [
     "claude-code",

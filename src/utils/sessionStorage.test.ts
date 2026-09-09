@@ -130,7 +130,7 @@ function snipBoundary(
 }
 
 async function writeJsonl(entries: unknown[]): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+  const dir = await mkdtemp(join(tmpdir(), 'soteria-session-storage-'))
   tempDirs.push(dir)
   const filePath = join(dir, 'session.jsonl')
   await writeFile(filePath, `${entries.map(e => JSON.stringify(e)).join('\n')}\n`)
@@ -486,7 +486,7 @@ test('restoreSessionMetadata clears cached goal when resumed transcript has no g
       goal: createGoalState('stale previous session goal', ts),
     })
 
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'soteria-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     await writeFile(
@@ -510,7 +510,7 @@ test('restoreSessionMetadata clears cached goal when resumed transcript has expl
       goal: createGoalState('stale previous session goal', ts),
     })
 
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'soteria-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     await writeFile(
@@ -535,7 +535,7 @@ test('restoreSessionMetadata re-appends the resumed active goal instead of stale
     })
     const resumedGoal = createGoalState('resumed current goal', ts)
 
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'soteria-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     await writeFile(
@@ -557,7 +557,7 @@ test('restoreSessionMetadata re-appends the resumed active goal instead of stale
 
 test('recordGoalState writes goal metadata durably before resolving', async () => {
   await withSessionPersistence(async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'openclaude-session-storage-'))
+    const dir = await mkdtemp(join(tmpdir(), 'soteria-session-storage-'))
     tempDirs.push(dir)
     const filePath = join(dir, `${sessionId}.jsonl`)
     switchSession(sessionId as never, dir)

@@ -170,7 +170,7 @@ import {
 } from './skills/loadSkillsDir.js'
 import { getBundledSkills } from './skills/bundledSkills.js'
 import {
-  getOpenClaudeCommandDescriptionKey,
+  getSoteriaCommandDescriptionKey,
   localize,
 } from './i18n/index.js'
 import { getBuiltinPluginSkillCommands } from './plugins/builtinPlugins.js'
@@ -191,6 +191,7 @@ import tag from './commands/tag/index.js'
 import outputStyle from './commands/output-style/index.js'
 import remoteEnv from './commands/remote-env/index.js'
 import upgrade from './commands/upgrade/index.js'
+import update from './commands/update/index.js'
 import {
   extraUsage,
   extraUsageNonInteractive,
@@ -338,6 +339,7 @@ const COMMANDS = memoize((): Command[] => [
   securityReview,
   terminalSetup,
   upgrade,
+  update,
   extraUsage,
   extraUsageNonInteractive,
   rateLimitOptions,
@@ -371,10 +373,10 @@ const COMMANDS = memoize((): Command[] => [
   ...(process.env.USER_TYPE === 'ant' && !process.env.IS_DEMO
     ? INTERNAL_ONLY_COMMANDS
     : []),
-].filter(isCommand).map(withOpenClaudeCommandLocalizationKey))
+].filter(isCommand).map(withSoteriaCommandLocalizationKey))
 
-function withOpenClaudeCommandLocalizationKey(cmd: Command): Command {
-  cmd.localizationKey ??= getOpenClaudeCommandDescriptionKey(cmd.name)
+function withSoteriaCommandLocalizationKey(cmd: Command): Command {
+  cmd.localizationKey ??= getSoteriaCommandDescriptionKey(cmd.name)
   return cmd
 }
 
@@ -765,7 +767,7 @@ export function getCommand(commandName: string, commands: Command[]): Command {
  */
 export function formatDescriptionWithSource(cmd: Command): string {
   if (cmd.type !== 'prompt') {
-    return formatOpenClaudeOwnedDescription(cmd)
+    return formatSoteriaOwnedDescription(cmd)
   }
 
   const desc = cmd.description ?? ''
@@ -784,18 +786,18 @@ export function formatDescriptionWithSource(cmd: Command): string {
 
   if (cmd.source === 'builtin' || cmd.source === 'mcp') {
     return cmd.source === 'builtin'
-      ? formatOpenClaudeOwnedDescription(cmd)
+      ? formatSoteriaOwnedDescription(cmd)
       : desc
   }
 
   if (cmd.source === 'bundled') {
-    return `${formatOpenClaudeOwnedDescription(cmd)} (bundled)`
+    return `${formatSoteriaOwnedDescription(cmd)} (bundled)`
   }
 
   return `${desc} (${getSettingSourceName(cmd.source)})`
 }
 
-function formatOpenClaudeOwnedDescription(cmd: Command): string {
+function formatSoteriaOwnedDescription(cmd: Command): string {
   const desc = cmd.description ?? ''
   if (cmd.localizationKey) {
     return localize(cmd.localizationKey, desc)

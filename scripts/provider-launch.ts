@@ -34,7 +34,7 @@ function parseLaunchOptions(argv: string[]): LaunchOptions {
   let requestedProfile: ProviderProfile | 'auto' | null = 'auto'
   const passthroughArgs: string[] = []
   let fast = false
-  let goal = normalizeRecommendationGoal(process.env.OPENCLAUDE_PROFILE_GOAL)
+  let goal = normalizeRecommendationGoal(process.env.SOTERIA_PROFILE_GOAL)
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]!
@@ -261,7 +261,7 @@ async function main(): Promise<void> {
     process.exit(buildCode)
   }
 
-  const devCode = await runProcess('node', ['bin/openclaude', ...options.passthroughArgs], env)
+  const devCode = await runProcess('node', ['bin/soteria', ...options.passthroughArgs], env)
   process.exit(devCode)
 }
 

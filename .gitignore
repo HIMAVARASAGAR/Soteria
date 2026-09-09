@@ -10,8 +10,8 @@ web/*.tsbuildinfo
 .env.*
 !.env.example
 auth.json
-.openclaude-profile.json
-.openclaude/
+.soteria-profile.json
+.soteria/
 reports/
 GEMINI.md
 CLAUDE.md
@@ -22,3 +22,4 @@ agent.log
 plan/
 .tmp
 temp_reference/
+*.tgz

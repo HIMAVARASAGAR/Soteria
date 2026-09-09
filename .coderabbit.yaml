@@ -47,7 +47,7 @@ reviews:
   path_instructions:
     - path: "**/*"
       instructions: |
-        Apply the OpenClaude maintainer review rubric from AGENTS.md. Review the current diff, not stale discussion context. Separate real blockers from suggestions. Do not request changes for vague style churn. Treat approval as merge-ready from CodeRabbit's side, pending required human review and GitHub Checks. If checks are failing or unavailable, say so clearly instead of implying the PR is fully ready.
+        Apply the Soteria maintainer review rubric from AGENTS.md. Review the current diff, not stale discussion context. Separate real blockers from suggestions. Do not request changes for vague style churn. Treat approval as merge-ready from CodeRabbit's side, pending required human review and GitHub Checks. If checks are failing or unavailable, say so clearly instead of implying the PR is fully ready.
 
     - path: "{src/services/api/**,src/integrations/**,src/utils/model/**,src/utils/provider*.ts,src/commands/provider/**}"
       instructions: |

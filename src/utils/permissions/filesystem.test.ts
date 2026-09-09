@@ -31,13 +31,13 @@ function permissionContext(mode: ToolPermissionContext['mode']) {
   } satisfies ToolPermissionContext
 }
 
-describe('OpenClaude commit message temp file permissions', () => {
+describe('Soteria commit message temp file permissions', () => {
   let originalCwd: string
   let projectDir: string
 
   beforeEach(async () => {
     originalCwd = getOriginalCwd()
-    projectDir = await mkdtemp(join(tmpdir(), 'openclaude-perms-'))
+    projectDir = await mkdtemp(join(tmpdir(), 'soteria-perms-'))
     await mkdir(join(projectDir, '.git'))
     setOriginalCwd(projectDir)
   })
@@ -47,38 +47,38 @@ describe('OpenClaude commit message temp file permissions', () => {
     await rm(projectDir, { recursive: true, force: true })
   })
 
-  test('allows the project-local OPENCLAUDE_COMMIT_MSG file without a safety prompt', () => {
+  test('allows the project-local SOTERIA_COMMIT_MSG file without a safety prompt', () => {
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(projectDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(projectDir, '.git', 'SOTERIA_COMMIT_MSG') },
       permissionContext('bypassPermissions'),
     )
 
     expect(result.behavior).toBe('allow')
     expect(result.decisionReason).toMatchObject({
       type: 'other',
-      reason: 'OpenClaude commit message file is allowed for writing',
+      reason: 'Soteria commit message file is allowed for writing',
     })
   })
 
-  test('allows the project-local OPENCLAUDE_COMMIT_MSG file in fullAccess mode', () => {
+  test('allows the project-local SOTERIA_COMMIT_MSG file in fullAccess mode', () => {
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(projectDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(projectDir, '.git', 'SOTERIA_COMMIT_MSG') },
       permissionContext('fullAccess'),
     )
 
     expect(result.behavior).toBe('allow')
     expect(result.decisionReason).toMatchObject({
       type: 'other',
-      reason: 'OpenClaude commit message file is allowed for writing',
+      reason: 'Soteria commit message file is allowed for writing',
     })
   })
 
   test('still prompts for the commit message file in default mode', () => {
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(projectDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(projectDir, '.git', 'SOTERIA_COMMIT_MSG') },
       permissionContext('default'),
     )
 
@@ -101,7 +101,7 @@ describe('OpenClaude commit message temp file permissions', () => {
     const otherDir = join(projectDir, 'other')
     const result = checkWritePermissionForTool(
       writeTool,
-      { file_path: join(otherDir, '.git', 'OPENCLAUDE_COMMIT_MSG') },
+      { file_path: join(otherDir, '.git', 'SOTERIA_COMMIT_MSG') },
       permissionContext('bypassPermissions'),
     )
 

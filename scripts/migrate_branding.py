@@ -22,4 +22,7 @@ def migrate_file(filepath):
         print(f"No changes in {filepath}")
 
 for arg in sys.argv[1:]:
-    migrate_file(arg)
+    if os.path.isdir(arg):
+        main(arg)
+    else:
+        migrate_file(arg)

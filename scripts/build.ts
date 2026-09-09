@@ -924,7 +924,8 @@ if (sdkResult?.success) {
 // ── Validate external lists ──────────────────────────────────────────────
 if (result?.success && sdkResult?.success) {
   console.log('\nValidating external lists...')
-  const validation = Bun.spawnSync(['bun', 'run', 'scripts/validate-externals.ts'], {
+  const validation = Bun.spawnSync(['bun', 'scripts/validate-externals.ts'], {
+    cwd: process.cwd(),
     stdout: 'inherit',
     stderr: 'inherit',
   })
@@ -968,8 +969,8 @@ if (result?.success) {
 
   // Stub markers are not byte-stable across build hosts: the per-importer
   // scanner records each stub as the resolved absolute source path, which
-  // differs only by the repo-root prefix (`/home/ubuntu/.../openclaude` locally
-  // vs `/home/runner/work/openclaude/openclaude` on CI). Diffing raw text made
+  // differs only by the repo-root prefix (`/home/ubuntu/.../soteria` locally
+  // vs `/home/runner/work/soteria/soteria` on CI). Diffing raw text made
   // CI fail on already-allowlisted stubs and report them stale. Key on the
   // repo-relative path from `src/` onward without extension: stable across hosts
   // yet still path-specific, so a stub named `constants.ts` in one directory
