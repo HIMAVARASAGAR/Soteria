@@ -66,6 +66,12 @@ export const ASYNC_AGENT_ALLOWED_TOOLS = new Set([
   TOOL_SEARCH_TOOL_NAME,
   ENTER_WORKTREE_TOOL_NAME,
   EXIT_WORKTREE_TOOL_NAME,
+  'audit_dependencies',
+  'scan_secrets',
+  'security_scan',
+  'taint_analysis',
+  'audit_container',
+  'generate_sbom',
 ])
 /**
  * Tools allowed only for in-process teammates (not general async agents).

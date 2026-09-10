@@ -1,5 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: internal-only import markers must not be reordered
 import addDir from './commands/add-dir/index.js'
+import audit from './commands/audit/index.js'
 import autofixPr from './commands/autofix-pr/index.js'
 import backfillSessions from './commands/backfill-sessions/index.js'
 import btw from './commands/btw/index.js'
@@ -27,6 +28,7 @@ import knowledge from './commands/knowledge/index.js'
 import memory from './commands/memory/index.js'
 import help from './commands/help/index.js'
 import ide from './commands/ide/index.js'
+import cyberide from './commands/cyberide/index.js'
 import init from './commands/init.js'
 import initVerifiers from './commands/init-verifiers.js'
 import keybindings from './commands/keybindings/index.js'
@@ -272,6 +274,7 @@ export const INTERNAL_ONLY_COMMANDS = [
 // since underlying functions read from config, which can't be read at module initialization time
 const COMMANDS = memoize((): Command[] => [
   addDir,
+  audit,
   advisor,
   agents,
   autoFix,
@@ -300,6 +303,7 @@ const COMMANDS = memoize((): Command[] => [
   heapDump,
   help,
   ide,
+  cyberide,
   init,
   keybindings,
   knowledge,

@@ -72,6 +72,12 @@ import { TaskCreateTool } from './tools/TaskCreateTool/TaskCreateTool.js'
 import { TaskGetTool } from './tools/TaskGetTool/TaskGetTool.js'
 import { TaskUpdateTool } from './tools/TaskUpdateTool/TaskUpdateTool.js'
 import { TaskListTool } from './tools/TaskListTool/TaskListTool.js'
+import { AuditDependenciesTool } from './tools/AuditDependenciesTool/index.js'
+import { SecretScanTool } from './tools/SecretScanTool/index.js'
+import { SecurityScanTool } from './tools/SecurityScanTool/index.js'
+import { TaintAnalysisTool } from './tools/TaintAnalysisTool/index.js'
+import { ContainerSecurityTool } from './tools/ContainerSecurityTool/index.js'
+import { SBOMGeneratorTool } from './tools/SBOMGeneratorTool/index.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import { isToolSearchEnabledOptimistic } from './utils/toolSearch.js'
 import { isTodoV2Enabled } from './utils/tasks.js'
@@ -230,6 +236,12 @@ export function getAllBaseTools(): Tools {
     ...(getPowerShellTool() ? [getPowerShellTool()] : []),
     ...(SnipTool ? [SnipTool] : []),
     ...(process.env.NODE_ENV === 'test' ? [TestingPermissionTool] : []),
+    AuditDependenciesTool,
+    SecretScanTool,
+    SecurityScanTool,
+    TaintAnalysisTool,
+    ContainerSecurityTool,
+    SBOMGeneratorTool,
     ListMcpResourcesTool,
     ReadMcpResourceTool,
     // Include ToolSearchTool when tool search might be enabled (optimistic check)

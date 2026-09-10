@@ -4186,6 +4186,27 @@ async function run(): Promise<CommanderCommand> {
     await update();
   });
 
+  // soteria cyberide / edit
+  program
+    .command('cyberide')
+    .alias('edit')
+    .description('Launch Soteria standalone web CyberIDE with Monaco Editor and real-time security diagnostics')
+    .option('-p, --port <number>', 'Port to listen on', '4200')
+    .action(async (options: { port?: string }) => {
+      const { createCyberIdeServer } = await import('./server/cyberIdeServer.js');
+      const { openBrowser } = await import('./utils/browser.js');
+      const port = parseInt(options.port || '4200', 10);
+      const cwd = process.cwd();
+      const server = createCyberIdeServer(cwd);
+      server.listen(port, '127.0.0.1', () => {
+        const url = `http://127.0.0.1:${port}`;
+        console.log(`\n🛡️  Soteria CyberIDE running at ${url}`);
+        console.log(`⚡ Standalone Monaco Code Editor with real-time cybersecurity diagnostics active.`);
+        console.log(`Press Ctrl+C to stop.\n`);
+        void openBrowser(url).catch(() => {});
+      });
+    });
+
   // claude install
   program.command('install [target]').description('Install Soteria native build. Use [target] to specify version (stable, latest, or specific version)').option('--force', 'Force installation even if already installed').action(async (target: string | undefined, options: {
     force?: boolean;
