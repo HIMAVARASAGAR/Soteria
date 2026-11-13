@@ -12,10 +12,17 @@ Use OpenAI-compatible APIs, Gemini, GitHub Models, Codex OAuth, Codex, Ollama, A
 
 [Quick Start](#quick-start) | [Setup Guides](#setup-guides) | [Providers](#supported-providers) | [Source Build](#source-build-and-local-development) | [VS Code Extension](#vs-code-extension) | [Community](#community)
 
+
+
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/chart?repos=HIMAVARASAGAR/Soteria&type=date&legend=top-left)](https://www.star-history.com/?repos=HIMAVARASAGAR%2FSoteria&type=date&legend=top-left)
-
+<a href="https://www.star-history.com/?repos=HIMAVARASAGAR%2FSoteria&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=HIMAVARASAGAR/Soteria&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=HIMAVARASAGAR/Soteria&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=HIMAVARASAGAR/Soteria&type=date&legend=top-left" />
+ </picture>
+</a>
 ## Why Soteria
 
 - Use one CLI across cloud APIs and local model backends
